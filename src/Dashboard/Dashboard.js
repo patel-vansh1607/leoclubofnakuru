@@ -10,12 +10,10 @@ const Dashboard = ({ session }) => {
   const [view, setView] = useState('overview');
   const [navItems, setNavItems] = useState([]);
   const [userRole, setUserRole] = useState('viewer');
-  const [loading, setLoading] = useState(true);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [tournamentDropdown, setTournamentDropdown] = useState(false);
 
   const leoLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572486/7932664-03_scur6z.png";
-  const isTournamentActive = ['teams', 'venues'].includes(view);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,9 +24,7 @@ const Dashboard = ({ session }) => {
         const { data: items } = await supabase.from('nav_items').select('*').order('sort_order', { ascending: true });
         setNavItems(items || []);
       } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setLoading(false);
+        console.error("Database fetch error:", err);
       }
     };
     if (session?.user?.id) fetchData();
@@ -43,18 +39,13 @@ const Dashboard = ({ session }) => {
     await supabase.auth.signOut();
   };
 
-  // Logic to handle main nav clicks
-  const handleMainNavLink = (viewKey) => {
-    setView(viewKey);
-    setTournamentDropdown(false); // Force close dropdown when going back to Roles/Overview
-  };
-
   const renderContent = () => {
     switch (view) {
       case 'roles': return <RoleManagement session={session} />;
       case 'teams': return <div className={s.placeholder}><h3>Teams</h3><p>Manage Leo Cup Squads</p></div>;
       case 'venues': return <div className={s.placeholder}><h3>Venues</h3><p>Manage Pitch Locations</p></div>;
-      default: return <div className={s.placeholder}><h3>Dashboard</h3><p>Welcome to the portal.</p></div>;
+      case 'overview': return <div className={s.placeholder}><h3>Overview</h3><p>Welcome to the portal.</p></div>;
+      default: return <div className={s.placeholder}><h3>{view.toUpperCase()}</h3><p>Module active.</p></div>;
     }
   };
 
@@ -69,22 +60,40 @@ const Dashboard = ({ session }) => {
             </div>
 
             <nav className={s.nav}>
-              {/* Dynamic items (Roles, Overview, etc.) */}
-              {navItems.map((item) => (
+              {/* 1. OVERVIEW BUTTON */}
+              <button 
+                className={view === 'overview' ? s.active : s.link} 
+                onClick={() => { setView('overview'); setTournamentDropdown(false); }}
+              >
+                <FontAwesomeIcon icon={Icons.faChartPie} className={s.icon} /> 
+                <span>Overview</span>
+              </button>
+
+              {/* 2. ROLE ACCESS BUTTON - Hardcoded to ensure it stays! */}
+              <button 
+                className={view === 'roles' ? s.active : s.link} 
+                onClick={() => { setView('roles'); setTournamentDropdown(false); }}
+              >
+                <FontAwesomeIcon icon={Icons.faUserShield} className={s.icon} /> 
+                <span>Role Access</span>
+              </button>
+
+              {/* 3. DYNAMIC DB ITEMS */}
+              {navItems.filter(i => i.view_key !== 'roles' && i.view_key !== 'overview').map((item) => (
                 <button 
                   key={item.view_key}
                   className={view === item.view_key ? s.active : s.link} 
-                  onClick={() => handleMainNavLink(item.view_key)}
+                  onClick={() => { setView(item.view_key); setTournamentDropdown(false); }}
                 >
                   <FontAwesomeIcon icon={Icons[item.icon_name] || Icons.faCircle} className={s.icon} /> 
                   <span>{item.label}</span>
                 </button>
               ))}
 
-              {/* Tournament Dropdown */}
+              {/* 4. TOURNAMENT DROPDOWN */}
               <div className={s.dropdownContainer}>
                 <button 
-                  className={(tournamentDropdown || isTournamentActive) ? s.active : s.link} 
+                  className={(['teams', 'venues'].includes(view) || tournamentDropdown) ? s.active : s.link} 
                   onClick={() => setTournamentDropdown(!tournamentDropdown)}
                 >
                   <FontAwesomeIcon icon={Icons.faTrophy} className={s.icon} />
@@ -96,17 +105,11 @@ const Dashboard = ({ session }) => {
                 </button>
                 
                 <div className={`${s.dropdownMenu} ${tournamentDropdown ? s.menuOpen : ''}`}>
-                  <button 
-                    className={view === 'teams' ? s.dropdownLinkActive : s.dropdownLink} 
-                    onClick={() => setView('teams')}
-                  >
+                  <button className={view === 'teams' ? s.dropdownLinkActive : s.dropdownLink} onClick={() => setView('teams')}>
                     <FontAwesomeIcon icon={Icons.faShieldHalved} className={s.subIcon} />
                     <span>Teams</span>
                   </button>
-                  <button 
-                    className={view === 'venues' ? s.dropdownLinkActive : s.dropdownLink} 
-                    onClick={() => setView('venues')}
-                  >
+                  <button className={view === 'venues' ? s.dropdownLinkActive : s.dropdownLink} onClick={() => setView('venues')}>
                     <FontAwesomeIcon icon={Icons.faMapLocationDot} className={s.subIcon} />
                     <span>Venues</span>
                   </button>
@@ -115,6 +118,7 @@ const Dashboard = ({ session }) => {
             </nav>
           </div>
 
+          {/* SIDEBAR FOOTER */}
           <div className={s.sidebarFooter}>
             <div className={s.userBadge}>
               <div className={s.avatar}>{session?.user?.email?.charAt(0).toUpperCase()}</div>
