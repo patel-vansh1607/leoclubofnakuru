@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Plus+Jakarta+Sans:ital,wght@0,800;1,800&display=swap');
-
 .appContainer {
   background: linear-gradient(180deg, #5c0a27 0%, #3d041a 100%);
   min-height: 100vh;
@@ -7,159 +5,64 @@
   font-family: 'Inter', sans-serif;
 }
 
-.navbar {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  padding: 0 30px;
-  border-bottom: 2px solid #f1c40f;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  height: 80px;
-  display: flex;
-  align-items: center;
+.mainContent {
+  padding: 20px;
 }
 
-.navContent {
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navLeft, .navRight {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex: 1;
-}
-
-.navRight { justify-content: flex-end; }
-.navLogo { height: 50px; width: auto; }
-
-.desktopClubName {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  color: #f1c40f;
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-}
-
-.links {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  justify-content: center;
-}
-
-.link {
-  color: white;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-}
-
-.adminBtn {
-  background-color: #f1c40f;
-  color: #4f0523 !important;
-  padding: 10px 24px;
-  border-radius: 10px;
-}
-
-/* Responsive Logic */
-@media (max-width: 1150px) {
-  .desktopClubName { display: none; }
-}
-
-@media (max-width: 900px) {
-  .hamburger { display: flex; flex-direction: column; gap: 6px; background: none; border: none; cursor: pointer; }
-  .bar { width: 28px; height: 3px; background-color: #f1c40f; transition: 0.3s; }
-  
-  .links {
-    display: none;
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 80%;
-    height: 100vh;
-    background: #4f0523;
-    flex-direction: column;
-    justify-content: center;
-    transition: 0.4s ease-in-out;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-    z-index: 1001;
-  }
-
-  .linksOpen { display: flex; right: 0; }
-  .activeBar1 { transform: translateY(9px) rotate(45deg); }
-  .activeBar2 { opacity: 0; }
-  .activeBar3 { transform: translateY(-9px) rotate(-45deg); }
+.dashboardWrapper {
+  height: 100vh;
+  overflow: hidden; /* Ensures the dashboard sidebar lock works */
 }
 
 /* Home Section Styles */
 .homeWrapper { padding: 60px 20px; text-align: center; }
-.mainTitle { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-style: italic; font-size: clamp(2.3rem, 8vw, 4.5rem); line-height: 1; margin-bottom: 20px; }
+.mainTitle { 
+  font-family: 'Plus Jakarta Sans', sans-serif; 
+  font-weight: 800; 
+  font-style: italic; 
+  font-size: clamp(2.3rem, 8vw, 4.5rem); 
+  line-height: 1; 
+  margin-bottom: 20px; 
+}
 .locationTag { color: #f1c40f; font-weight: 700; letter-spacing: 2px; }
 .missionCard { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 40px; max-width: 700px; margin: 40px auto; }
 .cardDivider { width: 60px; height: 4px; background: #f1c40f; margin: 20px auto; }
 .primaryCta { display: inline-block; background: #f1c40f; color: #4f0523; padding: 18px 40px; border-radius: 50px; text-decoration: none; font-weight: 800; margin-top: 20px; }
-/* ... keep your existing navbar and container styles ... */
-
-.closeBtn {
-  display: none; /* Hidden on desktop */
+.blockedOverlay {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff5f5;
+  font-family: 'Inter', sans-serif;
 }
 
-@media (max-width: 900px) {
-  .hamburger {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 1001;
-  }
+.blockedCard {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  text-align: center;
+  max-width: 400px;
+}
 
-  .bar {
-    width: 28px;
-    height: 3px;
-    background-color: #f1c40f;
-    transition: 0.3s;
-  }
+.blockedTitle {
+  color: #e53e3e;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
 
-  .links {
-    display: none;
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 80%;
-    height: 100vh;
-    background: #4f0523;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: 0.4s ease-in-out;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-    z-index: 1002;
-  }
+.blockedText {
+  color: #4a5568;
+  margin-bottom: 24px;
+}
 
-  .linksOpen {
-    display: flex;
-    right: 0;
-  }
-
-  .closeBtn {
-    display: block;
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    font-size: 3rem;
-    background: none;
-    border: none;
-    color: #f1c40f;
-    cursor: pointer;
-  }
+.backBtn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }

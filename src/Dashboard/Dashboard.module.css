@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+
+.layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background: #f8fafc;
+  font-family: 'Lato', sans-serif;
+  overflow: hidden;
+}
+
+/* Hide mobile header by default */
+.mobileHeader { display: none; }
+
+/* --- SIDEBAR --- */
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  z-index: 1000;
+  flex-shrink: 0;
+}
+
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.logoImg { height: 40px; width: auto; }
+.brandText { font-weight: 900; font-size: 1.2rem; color: #4f0523; }
+.brandText span { color: #f1c40f; }
+
+.closeBtn { display: none; } /* Hide close btn on desktop */
+
+.nav { display: flex; flex-direction: column; gap: 8px; }
+
+.link, .active {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.active { background: #4f0523; color: #fff; }
+.link:hover { background: #f1f5f9; color: #4f0523; }
+
+.sidebarFooter { border-top: 1px solid #f1f5f9; padding-top: 20px; }
+
+.adminCard { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+.avatar { 
+  width: 35px; height: 35px; background: #f1c40f; color: #4f0523; 
+  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900;
+}
+
+.uEmail { font-size: 0.7rem; color: #94a3b8; }
+
+.logout {
+  width: 100%; padding: 12px; background: #fff; color: #ef4444; 
+  border: 1px solid #fee2e2; border-radius: 10px; font-weight: 700; 
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+/* --- CONTENT --- */
+.main { flex: 1; overflow-y: auto; padding: 40px; }
+.card { background: #fff; padding: 30px; border-radius: 15px; border: 1px solid #e2e8f0; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    transform: translateX(-100%);
+    transition: 0.3s ease;
+  }
+  .sidebarOpen { transform: translateX(0); }
+  
+  .mobileHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 900;
+  }
+  
+  .mobileLogo { height: 30px; }
+  .menuBtn { background: none; border: none; font-size: 1.5rem; color: #4f0523; cursor: pointer; }
+  .closeBtn { display: block; margin-left: auto; background: none; border: none; color: #94a3b8; font-size: 1.2rem; }
+  .main { padding-top: 80px; } /* Adjust for mobile header height */
+}
+
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 950;
+}

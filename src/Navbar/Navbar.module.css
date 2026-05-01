@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Plus+Jakarta+Sans:ital,wght@0,800;1,800&display=swap');
+
+.navbar {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  padding: 0 30px;
+  border-bottom: 2px solid #f1c40f;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.navContent {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navLeft, .navRight {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.navRight { justify-content: flex-end; }
+.navLogo { height: 50px; width: auto; }
+
+.desktopClubName {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  color: #f1c40f;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  justify-content: center;
+}
+
+.link {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  transition: color 0.3s;
+}
+
+.link:hover { color: #f1c40f; }
+
+.adminBtn {
+  background-color: #f1c40f;
+  color: #4f0523 !important;
+  padding: 10px 24px;
+  border-radius: 10px;
+}
+
+.hamburger { display: none; }
+
+@media (max-width: 1150px) {
+  .desktopClubName { display: none; }
+}
+
+@media (max-width: 900px) {
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .bar {
+    width: 28px;
+    height: 3px;
+    background-color: #f1c40f;
+    transition: 0.3s;
+  }
+
+  .links {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 80%;
+    height: 100vh;
+    background: #4f0523;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: 0.4s ease-in-out;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    z-index: 1002;
+  }
+
+  .linksOpen { display: flex; right: 0; }
+
+  .closeBtn {
+    display: block;
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 3rem;
+    background: none;
+    border: none;
+    color: #f1c40f;
+    cursor: pointer;
+  }
+
+  .activeBar1 { transform: translateY(9px) rotate(45deg); }
+  .activeBar2 { opacity: 0; }
+  .activeBar3 { transform: translateY(-9px) rotate(-45deg); }
+}

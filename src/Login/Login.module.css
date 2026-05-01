@@ -38,7 +38,6 @@
   margin: 10px 0 30px;
 }
 
-/* --- Unified Form Block --- */
 .unifiedFormContainer {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
@@ -64,19 +63,11 @@
   color: white;
   font-size: 1rem;
   font-family: inherit;
-  transition: background 0.3s ease;
 }
 
-.inputField:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.05);
-}
+.inputField:focus { outline: none; background: rgba(255, 255, 255, 0.05); }
 
-.fieldDivider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.05);
-  margin: 0 20px;
-}
+.fieldDivider { height: 1px; background: rgba(255, 255, 255, 0.05); margin: 0 20px; }
 
 .submitBtn {
   background: #f1c40f;
@@ -86,25 +77,13 @@
   border-radius: 18px;
   font-weight: 800;
   font-size: 0.9rem;
-  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
-.submitBtn:hover:not(:disabled) {
-  background: #ffffff;
-  transform: scale(1.02);
-}
-
-.footer {
-  margin-top: 25px;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.25);
-  line-height: 1.5;
-}
+.submitBtn:hover:not(:disabled) { background: #ffffff; transform: scale(1.02); }
 
 .loader {
   width: 18px;
@@ -115,6 +94,53 @@
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.footer {
+  margin-top: 25px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.25);
+  line-height: 1.5;
+}
+/* Keep all your existing CSS and add/update these parts */
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputField {
+  width: 100%;
+  padding: 20px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+/* Position the eye button inside the input block */
+.eyeBtn {
+  position: absolute;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #f1c40f; /* Matches your title gold color */
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 10px;
+  transition: opacity 0.2s ease;
+  opacity: 0.7;
+}
+
+.eyeBtn:hover {
+  opacity: 1;
+}
+
+/* Ensure the input text doesn't overlap with the button */
+.passwordWrapper .inputField {
+  padding-right: 70px;
 }
