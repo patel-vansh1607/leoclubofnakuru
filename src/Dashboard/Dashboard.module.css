@@ -1,116 +1,103 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  --maroon: #5d0a2a;
+  --gold: #f39c12;
+  --border: #eeeeee;
+}
 
 .layout {
   display: flex;
-  width: 100%;
   height: 100vh;
-  background: #f8fafc;
-  font-family: 'Lato', sans-serif;
-  overflow: hidden;
+  background: #fff;
+  font-family: 'Poppins', sans-serif;
 }
 
-/* Hide mobile header by default */
-.mobileHeader { display: none; }
-
-/* --- SIDEBAR --- */
 .sidebar {
   width: 280px;
-  height: 100vh;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
-  z-index: 1000;
-  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid var(--border);
 }
 
 .sidebarInner {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
-  padding: 30px 20px;
-  box-sizing: border-box;
+  padding: 25px 20px;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 30px;
-}
+.topSection { flex: 1; }
 
-.logoImg { height: 40px; width: auto; }
-.brandText { font-weight: 900; font-size: 1.2rem; color: #4f0523; }
-.brandText span { color: #f1c40f; }
-
-.closeBtn { display: none; } /* Hide close btn on desktop */
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+.logoContainer { width: 40px; }
+.logoImg { width: 100%; height: auto; }
+.brandText { font-weight: 700; font-size: 1.3rem; color: var(--maroon); }
+.brandText span { color: var(--gold); }
 
 .nav { display: flex; flex-direction: column; gap: 8px; }
 
 .link, .active {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 14px 18px; border-radius: 14px; border: none;
+  font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.95rem;
+  cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent; text-align: left;
+}
+
+.active { background: var(--maroon); color: #fff; box-shadow: 0 4px 15px rgba(93, 10, 42, 0.15); }
+.link { color: #888; }
+.link:hover { background: #f9f9f9; color: var(--maroon); }
+
+.icon { width: 20px; }
+
+/* --- DROPDOWN --- */
+.dropdownContainer { display: flex; flex-direction: column; }
+.chevron { margin-left: auto; font-size: 0.8rem; transition: 0.3s; }
+.chevronRotate { transform: rotate(180deg); }
+
+.dropdownMenu {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.4s ease;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 15px;
-  border-radius: 12px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
+  flex-direction: column;
+  padding-left: 20px;
 }
 
-.active { background: #4f0523; color: #fff; }
-.link:hover { background: #f1f5f9; color: #4f0523; }
-
-.sidebarFooter { border-top: 1px solid #f1f5f9; padding-top: 20px; }
-
-.adminCard { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-.avatar { 
-  width: 35px; height: 35px; background: #f1c40f; color: #4f0523; 
-  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900;
+.menuOpen {
+  max-height: 200px;
+  opacity: 1;
+  margin: 10px 0;
 }
 
-.uEmail { font-size: 0.7rem; color: #94a3b8; }
-
-.logout {
-  width: 100%; padding: 12px; background: #fff; color: #ef4444; 
-  border: 1px solid #fee2e2; border-radius: 10px; font-weight: 700; 
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+.dropdownLink, .dropdownLinkActive {
+  background: none; border: none; padding: 12px 15px;
+  font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; border-radius: 12px; display: flex; align-items: center; gap: 10px;
 }
 
-/* --- CONTENT --- */
-.main { flex: 1; overflow-y: auto; padding: 40px; }
-.card { background: #fff; padding: 30px; border-radius: 15px; border: 1px solid #e2e8f0; }
+.dropdownLink { color: #888; }
+.dropdownLinkActive { color: var(--maroon); background: #f0f0f0; font-weight: 700; }
+.dropdownLink:hover { background: #f5f5f5; color: var(--maroon); }
 
-/* --- RESPONSIVE --- */
-@media (max-width: 992px) {
-  .sidebar {
-    position: fixed;
-    left: 0;
-    transform: translateX(-100%);
-    transition: 0.3s ease;
-  }
-  .sidebarOpen { transform: translateX(0); }
-  
-  .mobileHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: #fff;
-    border-bottom: 1px solid #e2e8f0;
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 900;
-  }
-  
-  .mobileLogo { height: 30px; }
-  .menuBtn { background: none; border: none; font-size: 1.5rem; color: #4f0523; cursor: pointer; }
-  .closeBtn { display: block; margin-left: auto; background: none; border: none; color: #94a3b8; font-size: 1.2rem; }
-  .main { padding-top: 80px; } /* Adjust for mobile header height */
+.subIcon { font-size: 0.85rem; width: 16px; }
+
+/* --- FOOTER --- */
+.sidebarFooter { border-top: 1px solid var(--border); padding-top: 20px; }
+.userBadge { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+.avatar { width: 40px; height: 40px; background: var(--gold); color: var(--maroon); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.uRole { font-weight: 700; color: var(--maroon); font-size: 0.75rem; text-transform: uppercase; margin: 0; }
+.uEmail { font-size: 0.7rem; color: #aaa; margin: 0; }
+
+.logoutBtn, .logoutConfirmBtn {
+  width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #fee2e2;
+  font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer;
 }
 
-.overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 950;
-}
+.logoutBtn { background: #fff5f5; color: #ef4444; }
+.logoutConfirmBtn { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+/* --- MAIN --- */
+.main { flex: 1; padding: 40px; overflow-y: auto; background: #fafafa; }
+.card { background: #fff; border: 1px solid var(--border); padding: 40px; border-radius: 24px; min-height: 80%; }
