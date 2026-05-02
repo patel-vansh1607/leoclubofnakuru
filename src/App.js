@@ -1,36 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Navbar from './Navbar/Navbar';
 import Registration from './Registration/Registration';
-import Login from './Login/Login'; 
-import Dashboard from './Dashboard/Dashboard'; 
 import styles from './App.module.css';
 
-function AppContent() {
+function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isBlocked, setIsBlocked] = useState(false); 
+  const [isBlocked, setIsBlocked] = useState(false);
   const location = useLocation();
+  const hostname = window.location.hostname;
 
-  // --- SUBDOMAIN DETECTION ---
-  // This checks if the user is visiting via your Namecheap subdomain
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isSubdomain = hostname.startsWith('app.'); 
+  // Domain Check
+  const isRegisterSubdomain = hostname === 'register.leofootball.online' || hostname === 'register.localhost';
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        checkUserStatus(session);
-      } else {
-        setLoading(false);
-      }
-    });
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await checkUserStatus(session);
+      else setLoading(false);
+    };
+
+    getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        checkUserStatus(session);
-      } else {
+      if (session) checkUserStatus(session);
+      else {
         setSession(null);
         setIsBlocked(false);
         setLoading(false);
@@ -42,12 +38,7 @@ function AppContent() {
 
   const checkUserStatus = async (currentSession) => {
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', currentSession.user.id)
-        .single();
-
+      const { data } = await supabase.from('profiles').select('role').eq('id', currentSession.user.id).single();
       if (data?.role === 'restricted') {
         await supabase.auth.signOut();
         setIsBlocked(true);
@@ -56,21 +47,19 @@ function AppContent() {
         setSession(currentSession);
         setIsBlocked(false);
       }
-    } catch (err) {
+    } catch {
       setSession(currentSession);
     } finally {
       setLoading(false);
     }
   };
 
-  // Logic to hide navbar for specific paths OR if on the registration subdomain
-  const hideNavbar = 
-    location.pathname.startsWith('/dashboard') || 
-    location.pathname.startsWith('/admin') || 
-    isSubdomain; // Hide navbar if we are on app.yourdomain.com
-
   if (loading) return <div className={styles.loader}>Verifying...</div>;
 
+  // 1. SUBDOMAIN OVERRIDE
+  if (isRegisterSubdomain) return <Registration />;
+
+  // 2. BLOCKED OVERRIDE
   if (isBlocked) {
     return (
       <div className={styles.blockedOverlay}>
@@ -83,34 +72,22 @@ function AppContent() {
     );
   }
 
+  const isDashboard = location.pathname.startsWith('/dashboard');
+  const isAdmin = location.pathname.startsWith('/admin');
+  const hideNavbar = isDashboard || isAdmin;
+
+  // 3. AUTH GUARD FOR DASHBOARD
+  if (isDashboard && !session) return <Navigate to="/admin" replace />;
+  if (isAdmin && session) return <Navigate to="/dashboard" replace />;
+
   return (
     <div className={styles.appContainer}>
       {!hideNavbar && <Navbar />}
       <main className={hideNavbar ? styles.dashboardWrapper : styles.mainContent}>
-        <Routes>
-          {/* 
-              If user is on the subdomain, the "/" path shows Registration.
-              Otherwise, it shows the Leo Cup Home.
-          */}
-          <Route 
-            path="/" 
-            element={isSubdomain ? <Registration /> : <div className={styles.home}><h1>Leo Cup Home</h1></div>} 
-          />
-          
-          <Route path="/registration" element={<Registration />} />
-          <Route path="/admin" element={session ? <Navigate to="/dashboard" /> : <Login />} />
-          <Route path="/dashboard" element={session ? <Dashboard session={session} /> : <Navigate to="/admin" />} />
-        </Routes>
+        {/* Outlet renders the components you defined in index.js (Home, Admin, etc.) */}
+        <Outlet context={{ session }} />
       </main>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <AppContent />
-    </Router>
   );
 }
 
