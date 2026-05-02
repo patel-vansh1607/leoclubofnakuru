@@ -10,7 +10,8 @@
   background: linear-gradient(180deg, #5c0a27 0%, #3d041a 100%);
   display: flex;
   justify-content: center;
-  padding: 100px 5vw 60px 5vw;
+  /* Reduced top padding significantly */
+  padding: 40px 5vw 60px 5vw;
   position: relative;
   overflow-x: hidden;
   color: white;
@@ -28,14 +29,23 @@
 
 .form { width: 100%; max-width: 1200px; z-index: 2; }
 
-.header { border-left: 10px solid #f1c40f; padding-left: 25px; margin-bottom: 50px; }
+/* FIX: Adjusted padding and height to ensure yellow bar frames title and tags */
+.header { 
+  border-left: 10px solid #f1c40f; 
+  padding: 5px 0 5px 25px; 
+  margin-bottom: 50px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
 .sakanaTitle {
   font-family: 'Sakana', sans-serif;
   font-size: clamp(2.5rem, 8vw, 65px);
   color: #f1c40f;
   margin: 0;
-  line-height: 0.8;
+  /* FIX: Increased line-height slightly to stop overlapping */
+  line-height: 1.1; 
   text-transform: uppercase;
 }
 
@@ -50,7 +60,8 @@
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 2px;
-  margin-right: 10px;
+  margin: 10px 10px 0 0; /* Added top margin for spacing from title */
+  display: inline-block;
 }
 
 .label {
@@ -72,6 +83,7 @@
   color: #f1c40f;
   outline: none;
   text-transform: uppercase;
+  padding-bottom: 5px;
 }
 
 .grid {
@@ -87,7 +99,7 @@
   padding: 30px 25px;
   display: flex;
   flex-direction: column;
-  min-height: 180px; /* Ensures consistent heights */
+  min-height: 180px; 
 }
 
 .idTag {
@@ -201,6 +213,7 @@
 .goldText { color: #f1c40f; font-weight: 900; margin-right: 10px; }
 
 @media (max-width: 768px) {
+  .container { padding-top: 20px; } /* Tight mobile spacing */
   .grid { grid-template-columns: 1fr; }
   .rulesDesktopGrid { grid-template-columns: 1fr; }
   .header { border-left-width: 6px; padding-left: 15px; }
