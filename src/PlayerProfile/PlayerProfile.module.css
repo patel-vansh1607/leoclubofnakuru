@@ -1,0 +1,154 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #3d041a 0%, #1a020b 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.scanlineOverlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.idCard {
+  width: 100%;
+  max-width: 800px;
+  background: #3d041a;
+  border: 4px solid #f1c40f;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+
+.cardHeader {
+  background: #f1c40f;
+  color: #3d041a;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sakanaBrand {
+  font-family: 'Sakana', sans-serif;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.sakanaBrand span {
+  -webkit-text-stroke: 1px #3d041a;
+  color: transparent;
+}
+
+.verifiedBadge {
+  font-size: 0.6rem;
+  font-weight: 900;
+  border: 1px solid #3d041a;
+  padding: 2px 8px;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.metaData {
+  display: flex;
+  flex-direction: column;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.mainContent {
+  padding: 60px 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+}
+
+.playerName {
+  font-family: 'Sakana', sans-serif;
+  font-size: 4rem;
+  color: white;
+  margin: 10px 0 30px 0;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.label {
+  color: #f1c40f;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.statBox label {
+  display: block;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 900;
+  margin-bottom: 5px;
+}
+
+.statBox p {
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.qrSection {
+  text-align: center;
+}
+
+.qrWrapper {
+  background: #f1c40f;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.qrLabel {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #f1c40f;
+}
+
+.cardFooter {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px 40px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.statusScreen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #3d041a;
+  color: #f1c40f;
+  font-family: 'Sakana';
+}
+
+@media (max-width: 600px) {
+  .mainContent { grid-template-columns: 1fr; text-align: center; }
+  .statsGrid { grid-template-columns: 1fr; }
+  .qrSection { order: -1; }
+  .playerName { font-size: 2.5rem; }
+}
