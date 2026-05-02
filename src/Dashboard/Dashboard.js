@@ -8,11 +8,11 @@ import s from './Dashboard.module.css';
 
 const Dashboard = ({ session }) => {
   const [view, setView] = useState('overview');
-  const [navItems, setNavItems] = useState([]);
+  // eslint-disable-next-line no-unused-vars
+  const [navItems, setNavItems] = useState([]); 
   const [userRole, setUserRole] = useState('viewer');
   const [confirmLogout, setConfirmLogout] = useState(false);
   
-  // State for different dropdowns
   const [tournamentDropdown, setTournamentDropdown] = useState(false);
   const [matchesDropdown, setMatchesDropdown] = useState(false);
 
@@ -24,9 +24,19 @@ const Dashboard = ({ session }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session?.user?.id).single();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session?.user?.id)
+          .single();
+        
         setUserRole(profile?.role || 'viewer');
-        const { data: items } = await supabase.from('nav_items').select('*').order('sort_order', { ascending: true });
+
+        const { data: items } = await supabase
+          .from('nav_items')
+          .select('*')
+          .order('sort_order', { ascending: true });
+        
         setNavItems(items || []);
       } catch (err) {
         console.error(err);
@@ -51,7 +61,7 @@ const Dashboard = ({ session }) => {
       case 'add-match': return <div className={s.placeholder}><h3>Add New Match</h3><p>Form to create a match will go here.</p></div>;
       case 'teams': return <div className={s.placeholder}><h3>Teams</h3><p>Manage Squads</p></div>;
       case 'venues': return <div className={s.placeholder}><h3>Venues</h3><p>Manage Locations</p></div>;
-      default: return <div className={s.placeholder}><h3>Overview</h3><p>Welcome to the portal.</p></div>;
+      default: return <div className={s.placeholder}><h3>Overview</h3><p>Welcome to the portal. You are logged in as {userRole.replace('_', ' ')}.</p></div>;
     }
   };
 
@@ -66,16 +76,17 @@ const Dashboard = ({ session }) => {
             </div>
 
             <nav className={s.nav}>
-              {/* Main Links */}
               <button className={view === 'overview' ? s.active : s.link} onClick={() => { setView('overview'); setTournamentDropdown(false); setMatchesDropdown(false); }}>
                 <FontAwesomeIcon icon={Icons.faChartPie} className={s.icon} /> <span>Overview</span>
               </button>
               
-              <button className={view === 'roles' ? s.active : s.link} onClick={() => { setView('roles'); setTournamentDropdown(false); setMatchesDropdown(false); }}>
-                <FontAwesomeIcon icon={Icons.faUserShield} className={s.icon} /> <span>Role Access</span>
-              </button>
+              {/* Only show Role Access to master_admin */}
+              {userRole === 'master_admin' && (
+                <button className={view === 'roles' ? s.active : s.link} onClick={() => { setView('roles'); setTournamentDropdown(false); setMatchesDropdown(false); }}>
+                  <FontAwesomeIcon icon={Icons.faUserShield} className={s.icon} /> <span>Role Access</span>
+                </button>
+              )}
 
-              {/* Matches Dropdown */}
               <div className={s.dropdownContainer}>
                 <button 
                   className={(matchesDropdown || isMatchesActive) ? s.active : s.link} 
@@ -95,7 +106,6 @@ const Dashboard = ({ session }) => {
                 </div>
               </div>
 
-              {/* Tournament Dropdown */}
               <div className={s.dropdownContainer}>
                 <button 
                   className={(tournamentDropdown || isTournamentActive) ? s.active : s.link} 
