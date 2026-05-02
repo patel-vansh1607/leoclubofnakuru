@@ -13,8 +13,12 @@ function AppContent() {
   const [isBlocked, setIsBlocked] = useState(false); 
   const location = useLocation();
 
+  // --- SUBDOMAIN DETECTION ---
+  // This checks if the user is visiting via your Namecheap subdomain
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isSubdomain = hostname.startsWith('app.'); 
+
   useEffect(() => {
-    // Check session on load
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         checkUserStatus(session);
@@ -23,7 +27,6 @@ function AppContent() {
       }
     });
 
-    // Listen for sign-in/out
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         checkUserStatus(session);
@@ -60,8 +63,11 @@ function AppContent() {
     }
   };
 
-  // Hides website navbar for both /admin (Login) and /dashboard
-  const hideNavbar = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
+  // Logic to hide navbar for specific paths OR if on the registration subdomain
+  const hideNavbar = 
+    location.pathname.startsWith('/dashboard') || 
+    location.pathname.startsWith('/admin') || 
+    isSubdomain; // Hide navbar if we are on app.yourdomain.com
 
   if (loading) return <div className={styles.loader}>Verifying...</div>;
 
@@ -82,7 +88,15 @@ function AppContent() {
       {!hideNavbar && <Navbar />}
       <main className={hideNavbar ? styles.dashboardWrapper : styles.mainContent}>
         <Routes>
-          <Route path="/" element={<div className={styles.home}><h1>Leo Cup Home</h1></div>} />
+          {/* 
+              If user is on the subdomain, the "/" path shows Registration.
+              Otherwise, it shows the Leo Cup Home.
+          */}
+          <Route 
+            path="/" 
+            element={isSubdomain ? <Registration /> : <div className={styles.home}><h1>Leo Cup Home</h1></div>} 
+          />
+          
           <Route path="/registration" element={<Registration />} />
           <Route path="/admin" element={session ? <Navigate to="/dashboard" /> : <Login />} />
           <Route path="/dashboard" element={session ? <Dashboard session={session} /> : <Navigate to="/admin" />} />
