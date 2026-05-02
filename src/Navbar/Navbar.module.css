@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Plus+Jakarta+Sans:ital,wght@0,800;1,800&display=swap');
 
 .navbar {
-  background: rgba(0, 0, 0, 0.3);
+  background: #4c0a23;
   backdrop-filter: blur(12px);
   padding: 0 30px;
   border-bottom: 2px solid #f1c40f;
