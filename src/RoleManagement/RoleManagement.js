@@ -6,7 +6,7 @@ const RoleManagement = ({ session }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState('restricted');
+  const [newUserRole, setNewUserRole] = useState('scorer');
 
   const MASTER_EMAIL = 'pvansh830@gmail.com';
   const isMaster = session?.user?.email === MASTER_EMAIL;
@@ -27,29 +27,24 @@ const RoleManagement = ({ session }) => {
   };
 
   const handleAddUser = async (e) => {
-  e.preventDefault();
-  
-  // Use your hardcoded master email as a secondary safety check
-  if (session?.user?.email !== 'pvansh830@gmail.com') {
-    return alert("Only Vansh can add users.");
-  }
+    e.preventDefault();
+    if (!isMaster) return alert("Only Vansh can grant access.");
 
-  const { error } = await supabase
-    .from('profiles')
-    .insert([{ 
-      email: newUserEmail.toLowerCase().trim(), 
-      role: newUserRole 
-    }]);
+    const { error } = await supabase
+      .from('profiles')
+      .insert([{ 
+        email: newUserEmail.toLowerCase().trim(), 
+        role: newUserRole 
+      }]);
 
-  if (error) {
-    console.error("Insert Error:", error);
-    alert("Database rejected the request: " + error.message);
-  } else {
-    setNewUserEmail('');
-    fetchUsers();
-    alert("User successfully pre-registered.");
-  }
-};
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
+      setNewUserEmail('');
+      fetchUsers();
+      alert("User pre-registered successfully.");
+    }
+  };
 
   const updateAccess = async (userId, newRole) => {
     if (!isMaster) return;
@@ -61,75 +56,79 @@ const RoleManagement = ({ session }) => {
     if (!error) fetchUsers();
   };
 
-  if (loading) return <div className={r.loader}>Syncing...</div>;
+  if (loading) return <div className={r.loader}>Syncing Leo Cup Security...</div>;
 
   return (
     <div className={r.roleContainer}>
+      <header className={r.header}>
+        <h2 className={r.title}>Access Control</h2>
+        <p className={r.subtitle}>Manage tournament permissions and staff levels.</p>
+      </header>
+
       {/* 1. NEW USER FORM */}
       {isMaster && (
-        <div className={r.addSection}>
-          <h4>Add New User</h4>
+        <section className={r.addSection}>
           <form onSubmit={handleAddUser} className={r.addForm}>
-            <input 
-              type="email" 
-              placeholder="User Email" 
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
-              required
-              className={r.input}
-            />
-            <select 
-              value={newUserRole} 
-              onChange={(e) => setNewUserRole(e.target.value)}
-              className={r.roleSelect}
-            >
-              <option value="restricted">Restricted</option>
-              <option value="admin">Admin</option>
-              <option value="master_admin">Master Admin</option>
-            </select>
-            <button type="submit" className={r.btnAdd}>Add User</button>
+            <div className={r.inputGroup}>
+              <input 
+                type="email" 
+                placeholder="Staff Email" 
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+                required
+                className={r.input}
+              />
+              <select 
+                value={newUserRole} 
+                onChange={(e) => setNewUserRole(e.target.value)}
+                className={r.roleSelect}
+              >
+                <option value="scorer">Scorer (Level 1)</option>
+                <option value="admin">Admin (Level 2)</option>
+                <option value="superadmin">Superadmin (Level 3)</option>
+                <option value="master_admin">Master Admin (Level 4)</option>
+              </select>
+              <button type="submit" className={r.btnAdd}>Invite Staff</button>
+            </div>
           </form>
-        </div>
+        </section>
       )}
 
       {/* 2. USER LIST */}
-      <div className={r.headerBox}>
-        <h3>Current Users</h3>
-      </div>
-
       <div className={r.tableWrapper}>
         <table className={r.userTable}>
           <thead>
             <tr>
-              <th>Account</th>
-              <th>Status</th>
-              <th>Assignment</th>
+              <th>Account Email</th>
+              <th>Current Rank</th>
+              <th>Modify Access</th>
             </tr>
           </thead>
           <tbody>
             {users.length > 0 ? users.map(u => (
-              <tr key={u.id}>
+              <tr key={u.id} className={r.userRow}>
                 <td className={r.emailCell}>{u.email}</td>
                 <td>
-                  <span className={u.role === 'restricted' ? r.badgeBlocked : r.badgeActive}>
-                    {u.role}
+                  <span className={`${r.badge} ${r[u.role]}`}>
+                    {u.role ? u.role.replace('_', ' ') : 'no role'}
                   </span>
                 </td>
                 <td>
                   <select 
-                    className={r.roleSelect}
-                    value={u.role || 'restricted'}
+                    className={r.tableSelect}
+                    value={u.role || 'scorer'}
                     disabled={!isMaster || u.email === MASTER_EMAIL}
                     onChange={(e) => updateAccess(u.id, e.target.value)}
                   >
-                    <option value="restricted">Restricted</option>
+                    <option value="scorer">Scorer</option>
                     <option value="admin">Admin</option>
+                    <option value="superadmin">Superadmin</option>
                     <option value="master_admin">Master Admin</option>
                   </select>
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan="3" className={r.noData}>No users found.</td></tr>
+              <tr><td colSpan="3" className={r.noData}>No staff members found.</td></tr>
             )}
           </tbody>
         </table>

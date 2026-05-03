@@ -12,21 +12,29 @@ function App() {
   const location = useLocation();
   const hostname = window.location.hostname;
 
-  // Domain Check
+  // Domain Check: Handle specialized registration subdomain
   const isRegisterSubdomain = hostname === 'register.leofootball.online' || hostname === 'register.localhost';
 
   useEffect(() => {
-    const getSession = async () => {
+    const getInitialSession = async () => {
+      console.log("DEBUG: Checking initial auth session...");
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) await checkUserStatus(session);
-      else setLoading(false);
+      
+      if (session) {
+        await checkUserStatus(session);
+      } else {
+        setLoading(false);
+      }
     };
 
-    getSession();
+    getInitialSession();
 
+    // Listen for auth changes (Login, Logout, Token Refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) checkUserStatus(session);
-      else {
+      console.log("DEBUG: Auth state changed:", _event);
+      if (session) {
+        checkUserStatus(session);
+      } else {
         setSession(null);
         setIsBlocked(false);
         setLoading(false);
@@ -36,10 +44,20 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  /**
+   * Verified user roles against the database.
+   * If a user is 'restricted', they are booted immediately.
+   */
   const checkUserStatus = async (currentSession) => {
     try {
-      const { data } = await supabase.from('profiles').select('role').eq('id', currentSession.user.id).single();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', currentSession.user.id)
+        .single();
+
       if (data?.role === 'restricted') {
+        console.warn("DEBUG: Restricted user detected. Blocking access.");
         await supabase.auth.signOut();
         setIsBlocked(true);
         setSession(null);
@@ -47,25 +65,29 @@ function App() {
         setSession(currentSession);
         setIsBlocked(false);
       }
-    } catch {
+    } catch (err) {
+      console.error("DEBUG: Role check failed, defaulting to session active.", err);
       setSession(currentSession);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className={styles.loader}>Verifying...</div>;
+  // --- RENDERING LOGIC ---
 
-  // 1. SUBDOMAIN OVERRIDE
+  if (loading) return <div className={styles.loader}>Verifying Security Levels...</div>;
+
+  // 1. Handle Registration Subdomain
   if (isRegisterSubdomain) return <Registration />;
 
-  // 2. BLOCKED OVERRIDE
+  // 2. Handle Blocked/Restricted Users
   if (isBlocked) {
     return (
       <div className={styles.blockedOverlay}>
         <div className={styles.blockedCard}>
           <h1>Access Restricted</h1>
-          <p>Please contact Vansh for an upgrade.</p>
+          <p>Your account level does not permit dashboard access.</p>
+          <p>Please contact <strong>Vansh</strong> for an upgrade.</p>
           <button onClick={() => setIsBlocked(false)}>Return Home</button>
         </div>
       </div>
@@ -76,7 +98,7 @@ function App() {
   const isAdmin = location.pathname.startsWith('/admin');
   const hideNavbar = isDashboard || isAdmin;
 
-  // 3. AUTH GUARD FOR DASHBOARD
+  // 3. Auth Guard: Redirect unauthenticated users trying to hit the dashboard
   if (isDashboard && !session) return <Navigate to="/admin" replace />;
   if (isAdmin && session) return <Navigate to="/dashboard" replace />;
 
@@ -84,7 +106,10 @@ function App() {
     <div className={styles.appContainer}>
       {!hideNavbar && <Navbar />}
       <main className={hideNavbar ? styles.dashboardWrapper : styles.mainContent}>
-        {/* Outlet renders the components you defined in index.js (Home, Admin, etc.) */}
+        {/* 
+            CRITICAL: The 'context' prop allows all child routes 
+            (like Dashboard) to access the session.
+        */}
         <Outlet context={{ session }} />
       </main>
     </div>

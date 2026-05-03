@@ -1,143 +1,121 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Icons from '@fortawesome/free-solid-svg-icons';
 
 import RoleManagement from '../RoleManagement/RoleManagement';
+import TeamApprovals from '../TeamApprovals/TeamApprovals'; 
 import s from './Dashboard.module.css';
 
-const Dashboard = ({ session }) => {
+const Dashboard = () => {
+  const { session } = useOutletContext();
   const [view, setView] = useState('overview');
-  // eslint-disable-next-line no-unused-vars
-  const [navItems, setNavItems] = useState([]); 
-  const [userRole, setUserRole] = useState('viewer');
-  const [confirmLogout, setConfirmLogout] = useState(false);
-  
+  const [userRole, setUserRole] = useState('scorer');
   const [tournamentDropdown, setTournamentDropdown] = useState(false);
-  const [matchesDropdown, setMatchesDropdown] = useState(false);
-
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  
+  const dropdownRef = useRef(null);
   const leoLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572486/7932664-03_scur6z.png";
 
-  const isTournamentActive = ['teams', 'venues'].includes(view);
-  const isMatchesActive = ['match-list', 'add-match'].includes(view);
-
+  // Close dropdown when clicking outside
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session?.user?.id)
-          .single();
-        
-        setUserRole(profile?.role || 'viewer');
-
-        const { data: items } = await supabase
-          .from('nav_items')
-          .select('*')
-          .order('sort_order', { ascending: true });
-        
-        setNavItems(items || []);
-      } catch (err) {
-        console.error(err);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setTournamentDropdown(false);
       }
     };
-    if (session?.user?.id) fetchData();
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const fetchUserLevel = async () => {
+      if (!session?.user?.id) return;
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+      if (profile) setUserRole(profile.role);
+    };
+    fetchUserLevel();
   }, [session]);
 
-  const handleLogout = async () => {
-    if (!confirmLogout) {
-      setConfirmLogout(true);
-      setTimeout(() => setConfirmLogout(false), 3000);
-      return;
-    }
-    await supabase.auth.signOut();
-  };
-
-  const renderContent = () => {
-    switch (view) {
-      case 'roles': return <RoleManagement session={session} />;
-      case 'match-list': return <div className={s.placeholder}><h3>Match List</h3><p>Viewing all scheduled matches.</p></div>;
-      case 'add-match': return <div className={s.placeholder}><h3>Add New Match</h3><p>Form to create a match will go here.</p></div>;
-      case 'teams': return <div className={s.placeholder}><h3>Teams</h3><p>Manage Squads</p></div>;
-      case 'venues': return <div className={s.placeholder}><h3>Venues</h3><p>Manage Locations</p></div>;
-      default: return <div className={s.placeholder}><h3>Overview</h3><p>Welcome to the portal. You are logged in as {userRole.replace('_', ' ')}.</p></div>;
-    }
-  };
-
   return (
-    <div className={s.layout}>
-      <aside className={s.sidebar}>
-        <div className={s.sidebarInner}>
-          <div className={s.topSection}>
-            <div className={s.brand}>
-              <div className={s.logoContainer}><img src={leoLogo} alt="Logo" className={s.logoImg} /></div>
-              <div className={s.brandText}>LEO<span>CUP</span></div>
-            </div>
+    <div className={s.dashboardContainer}>
+      {/* Mobile Toggle - Hidden on Laptop */}
+      <button className={s.mobileMenuBtn} onClick={() => setSidebarOpen(!isSidebarOpen)}>
+        <FontAwesomeIcon icon={isSidebarOpen ? Icons.faTimes : Icons.faBars} />
+      </button>
 
-            <nav className={s.nav}>
-              <button className={view === 'overview' ? s.active : s.link} onClick={() => { setView('overview'); setTournamentDropdown(false); setMatchesDropdown(false); }}>
-                <FontAwesomeIcon icon={Icons.faChartPie} className={s.icon} /> <span>Overview</span>
-              </button>
-              
-              {/* Only show Role Access to master_admin */}
-              {userRole === 'master_admin' && (
-                <button className={view === 'roles' ? s.active : s.link} onClick={() => { setView('roles'); setTournamentDropdown(false); setMatchesDropdown(false); }}>
-                  <FontAwesomeIcon icon={Icons.faUserShield} className={s.icon} /> <span>Role Access</span>
-                </button>
-              )}
-
-              <div className={s.dropdownContainer}>
-                <button 
-                  className={(matchesDropdown || isMatchesActive) ? s.active : s.link} 
-                  onClick={() => { setMatchesDropdown(!matchesDropdown); setTournamentDropdown(false); }}
-                >
-                  <FontAwesomeIcon icon={Icons.faCalendarDays} className={s.icon} />
-                  <span>Matches</span>
-                  <FontAwesomeIcon icon={Icons.faChevronDown} className={`${s.chevron} ${matchesDropdown ? s.chevronRotate : ''}`} />
-                </button>
-                <div className={`${s.dropdownMenu} ${matchesDropdown || isMatchesActive ? s.menuOpen : ''}`}>
-                  <button className={view === 'match-list' ? s.dropdownLinkActive : s.dropdownLink} onClick={() => setView('match-list')}>
-                    <FontAwesomeIcon icon={Icons.faListCheck} className={s.subIcon} /> <span>All Matches</span>
-                  </button>
-                  <button className={view === 'add-match' ? s.dropdownLinkActive : s.dropdownLink} onClick={() => setView('add-match')}>
-                    <FontAwesomeIcon icon={Icons.faPlus} className={s.subIcon} /> <span>Add Match</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className={s.dropdownContainer}>
-                <button 
-                  className={(tournamentDropdown || isTournamentActive) ? s.active : s.link} 
-                  onClick={() => { setTournamentDropdown(!tournamentDropdown); setMatchesDropdown(false); }}
-                >
-                  <FontAwesomeIcon icon={Icons.faTrophy} className={s.icon} />
-                  <span>Tournament</span>
-                  <FontAwesomeIcon icon={Icons.faChevronDown} className={`${s.chevron} ${tournamentDropdown ? s.chevronRotate : ''}`} />
-                </button>
-                <div className={`${s.dropdownMenu} ${tournamentDropdown || isTournamentActive ? s.menuOpen : ''}`}>
-                  <button className={view === 'teams' ? s.dropdownLinkActive : s.dropdownLink} onClick={() => setView('teams')}>
-                    <FontAwesomeIcon icon={Icons.faShieldHalved} className={s.subIcon} /> <span>Teams</span>
-                  </button>
-                  <button className={view === 'venues' ? s.dropdownLinkActive : s.dropdownLink} onClick={() => setView('venues')}>
-                    <FontAwesomeIcon icon={Icons.faMapLocationDot} className={s.subIcon} /> <span>Venues</span>
-                  </button>
-                </div>
-              </div>
-            </nav>
-          </div>
-
-          <div className={s.sidebarFooter}>
-            <button className={confirmLogout ? s.logoutConfirmBtn : s.logoutBtn} onClick={handleLogout}>
-              <FontAwesomeIcon icon={confirmLogout ? Icons.faCheck : Icons.faPowerOff} />
-              <span>{confirmLogout ? "Confirm?" : "Log Out"}</span>
-            </button>
-          </div>
+      <aside className={`${s.sidebar} ${isSidebarOpen ? s.sidebarActive : ''}`}>
+        <div className={s.brand}>
+          <img src={leoLogo} alt="Leo Logo" />
+          <h2 className={s.brandText}>LEO<span>CUP</span></h2>
         </div>
+
+        <nav className={s.nav}>
+          <button 
+            className={view === 'overview' ? s.activeBtn : s.navBtn} 
+            onClick={() => {setView('overview'); setSidebarOpen(false);}}
+          >
+            <FontAwesomeIcon icon={Icons.faColumns} /> Overview
+          </button>
+          
+          <div className={s.navGroup} ref={dropdownRef}>
+            <button 
+              className={tournamentDropdown || ['submissions', 'approvals', 'teams'].includes(view) ? s.activeBtn : s.navBtn} 
+              onClick={() => setTournamentDropdown(!tournamentDropdown)}
+            >
+              <FontAwesomeIcon icon={Icons.faTrophy} /> Tournament 
+              <FontAwesomeIcon icon={Icons.faChevronDown} className={`${s.chevron} ${tournamentDropdown ? s.rotate : ''}`} />
+            </button>
+            
+            <div className={`${s.dropdownMenu} ${tournamentDropdown ? s.show : ''}`}>
+              {['superadmin', 'master_admin'].includes(userRole) && (
+                <>
+                  <button className={view === 'submissions' ? s.innerActive : ''} onClick={() => {setView('submissions'); setSidebarOpen(false);}}>Submissions</button>
+                  <button className={view === 'approvals' ? s.innerActive : ''} onClick={() => {setView('approvals'); setSidebarOpen(false);}}>Approvals</button>
+                </>
+              )}
+              <button className={view === 'teams' ? s.innerActive : ''} onClick={() => {setView('teams'); setSidebarOpen(false);}}>Teams List</button>
+            </div>
+          </div>
+
+          {userRole === 'master_admin' && (
+            <button 
+              className={view === 'roles' ? s.activeBtn : s.navBtn} 
+              onClick={() => {setView('roles'); setSidebarOpen(false);}}
+            >
+              <FontAwesomeIcon icon={Icons.faUserShield} /> Role Access
+            </button>
+          )}
+        </nav>
+
+        <button className={s.logoutBtn} onClick={() => supabase.auth.signOut()}>
+          <FontAwesomeIcon icon={Icons.faSignOutAlt} /> Logout
+        </button>
       </aside>
 
-      <main className={s.main}>
-        <div className={s.card}>{renderContent()}</div>
+      <main className={s.mainContent}>
+        <header className={s.topBar}>
+          <h1 className={s.viewTitle}>{view.toUpperCase()}</h1>
+          <div className={s.userBadge}>{session?.user?.email}</div>
+        </header>
+        
+        <div className={s.scrollArea}>
+          {view === 'roles' && <RoleManagement session={session} />}
+          {view === 'approvals' && <TeamApprovals session={session} />}
+          {view === 'submissions' && <TeamApprovals session={session} filter="pending" />}
+          {view === 'overview' && (
+            <div className={s.bentoGrid}>
+              <div className={`${s.bentoItem} ${s.welcomeCard}`}>
+                <span className={s.locationTag}>NAKURU, KENYA</span>
+                <h2 className={s.mainTitle}>Welcome, <span>Master</span></h2>
+                <div className={s.cardDivider}></div>
+                <p>Registration for Season 2 is active. You have full system clearance.</p>
+              </div>
+              {/* Add more bento items as needed */}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

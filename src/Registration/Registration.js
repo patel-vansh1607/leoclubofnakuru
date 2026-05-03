@@ -39,6 +39,7 @@ const Registration = () => {
     const teamCustomId = generateID('TEAM');
 
     try {
+      // 1. Insert Team with PENDING status for Admin Review
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .insert([{ 
@@ -46,13 +47,15 @@ const Registration = () => {
           team_name: formData.teamName,
           captain_whatsapp: formData.captainWhatsapp,
           category: "UNDER 19",
-          payment_status: "PENDING"
+          payment_status: "PENDING", // Sent for Admin Approval
+          is_approved: false
         }])
         .select()
         .single();
 
       if (teamError) throw teamError;
 
+      // 2. Insert Players linked to that team
       const playersToInsert = formData.players.map((name, i) => {
         const pId = generateID('PLAYER', i);
         return {
@@ -67,11 +70,11 @@ const Registration = () => {
       const { error: playerError } = await supabase.from('players').insert(playersToInsert);
       if (playerError) throw playerError;
 
-      alert("APPLICATION RECEIVED. SQUAD ID: " + teamCustomId);
+      alert(`APPLICATION FILED: ${teamCustomId}. Awaiting Master Admin approval. If rejected, data will be purged.`);
       window.location.reload();
       
     } catch (err) {
-      alert("CRITICAL ERROR: UPLINK FAILED");
+      alert("CRITICAL ERROR: DATABASE UPLINK FAILED");
     } finally {
       setLoading(false);
     }
@@ -116,25 +119,25 @@ const Registration = () => {
             <label className={styles.label}>TOURNAMENT_ADVISORY</label>
             <div className={styles.rulesDesktopGrid}>
               <div className={styles.ruleItem}>
-                <strong>1. PENDING STATUS:</strong>
-                <p>Registration is NOT complete upon submission.</p>
+                <strong>1. ADMIN REVIEW:</strong>
+                <p>Data is saved but remains inactive until Master Admin approval.</p>
               </div>
               <div className={styles.ruleItem}>
-                <strong>2. AGE AUDIT:</strong>
-                <p>Leo Club will audit all players. Any player 19+ results in disqualification.</p>
+                <strong>2. PURGE POLICY:</strong>
+                <p>If your application is rejected, all team and player data is permanently deleted.</p>
               </div>
               <div className={styles.ruleItem}>
                 <strong>3. PAYMENT:</strong>
-                <p>Confirmation sent via WhatsApp after registration fee is cleared.</p>
+                <p>Status updates to "PAID" only after manual verification.</p>
               </div>
               <div className={styles.ruleItem}>
-                <strong>4. ID ACTIVATION:</strong>
-                <p>QR codes inactive until physical certificates are verified.</p>
+                <strong>4. ACCESS:</strong>
+                <p>Only Vansh can grant super admin or admin access.</p>
               </div>
             </div>
             <label className={styles.checkboxLabel}>
               <input type="checkbox" checked={acceptedRules} onChange={(e) => setAcceptedRules(e.target.checked)} required />
-              <span>I UNDERSTAND REGISTRATION IS PENDING UNTIL VERIFICATION AND PAYMENT.</span>
+              <span>I AGREE TO THE DATA RETENTION AND APPROVAL POLICIES.</span>
             </label>
           </div>
 
