@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOutletContext, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -32,6 +32,9 @@ const Dashboard = () => {
     if (path.includes('approvals')) return 'Approvals';
     if (path.includes('teams')) return 'Teams List';
     if (path.includes('roles')) return 'Role Access';
+    if (path.includes('add-team')) return 'Add New Team';
+    if (path.includes('playing-teams')) return 'Tournament Roster'; // Added Title
+    if (path.includes('draft-teams')) return 'Draft Teams';
     return 'Overview';
   };
 
@@ -79,12 +82,32 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* Restricted Access for Master Admin & Super Admin */}
+            {(userRole === 'master_admin' || userRole === 'super_admin') && (
+              <>
+                <p className={s.sectionLabel}>MANAGEMENT</p>
+                <button className={isActive('/dashboard/add-team') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/add-team'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faPlusCircle} /></div>
+                  <span>Add Team</span>
+                </button>
+                {/* NEW: Playing Teams Oversight */}
+                <button className={isActive('/dashboard/playing-teams') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/playing-teams'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUsers} /></div>
+                  <span>Playing Teams</span>
+                </button>
+              </>
+            )}
+
             {userRole === 'master_admin' && (
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
                 <button className={isActive('/dashboard/roles') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/roles'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUserShield} /></div>
                   <span>Role Access</span>
+                </button>
+                <button className={isActive('/dashboard/draft-teams') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/draft-teams'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faClipboardList} /></div>
+                  <span>Draft Teams</span>
                 </button>
               </>
             )}

@@ -39,7 +39,7 @@ const Registration = () => {
     const teamCustomId = generateID('TEAM');
 
     try {
-      // 1. Insert Team with PENDING status for Admin Review
+      // 1. Insert Team and retrieve the database-generated UUID
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .insert([{ 
@@ -47,7 +47,7 @@ const Registration = () => {
           team_name: formData.teamName,
           captain_whatsapp: formData.captainWhatsapp,
           category: "UNDER 19",
-          payment_status: "PENDING", // Sent for Admin Approval
+          payment_status: "PENDING",
           is_approved: false
         }])
         .select()
@@ -55,12 +55,12 @@ const Registration = () => {
 
       if (teamError) throw teamError;
 
-      // 2. Insert Players linked to that team
+      // 2. Prepare Players linked via the UUID (teamData.id)
       const playersToInsert = formData.players.map((name, i) => {
         const pId = generateID('PLAYER', i);
         return {
           player_id: pId,
-          team_id: teamData.id,
+          team_id: teamData.id, 
           name: name,
           qr_string: `https://leocup.com/verify/${pId}`,
           verified: false
@@ -68,13 +68,19 @@ const Registration = () => {
       });
 
       const { error: playerError } = await supabase.from('players').insert(playersToInsert);
-      if (playerError) throw playerError;
+      
+      if (playerError) {
+        // Cleanup orphaned team if player insertion fails
+        await supabase.from('teams').delete().eq('id', teamData.id);
+        throw playerError;
+      }
 
-      alert(`APPLICATION FILED: ${teamCustomId}. Awaiting Master Admin approval. If rejected, data will be purged.`);
+      alert(`APPLICATION FILED: ${teamCustomId}. Awaiting Master Admin approval.`);
       window.location.reload();
       
     } catch (err) {
-      alert("CRITICAL ERROR: DATABASE UPLINK FAILED");
+      console.error("Submission error:", err);
+      alert(`CRITICAL ERROR: ${err.message || "DATABASE UPLINK FAILED"}`);
     } finally {
       setLoading(false);
     }
@@ -90,7 +96,7 @@ const Registration = () => {
           <header className={styles.header}>
             <h1 className={styles.sakanaTitle}>LEO FOOTBALL CUP <span>SEASON 2</span></h1>
             <div className={styles.metaRow}>
-              <span className={styles.tag}>OFFICAL REGISTRATION PAGE</span>
+              <span className={styles.tag}>OFFICIAL REGISTRATION PAGE</span>
               <span className={styles.tag}>U19_ONLY</span>
             </div>
           </header>
@@ -120,15 +126,15 @@ const Registration = () => {
             <div className={styles.rulesDesktopGrid}>
               <div className={styles.ruleItem}>
                 <strong>1. ADMIN REVIEW:</strong>
-                <p>Data is saved but remains inactive until Master Admin approval.</p>
+                <p>Data is inactive until Master Admin approval.</p>
               </div>
               <div className={styles.ruleItem}>
                 <strong>2. PURGE POLICY:</strong>
-                <p>If your application is rejected, all team and player data is permanently deleted.</p>
+                <p>Rejected applications result in permanent data deletion.</p>
               </div>
               <div className={styles.ruleItem}>
                 <strong>3. PAYMENT:</strong>
-                <p>Status updates to "PAID" only after manual verification.</p>
+                <p>Manual verification required for "PAID" status.</p>
               </div>
               <div className={styles.ruleItem}>
                 <strong>4. ACCESS:</strong>

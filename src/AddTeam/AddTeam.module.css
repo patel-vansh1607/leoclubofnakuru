@@ -1,0 +1,193 @@
+.container {
+  padding: 40px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.header { margin-bottom: 40px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 15px 0 5px 0;
+  letter-spacing: -1.5px;
+}
+
+.subtitle { color: rgba(255, 255, 255, 0.5); font-size: 0.95rem; }
+
+.bentoGrid { display: flex; flex-direction: column; gap: 20px; }
+
+.card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 25px;
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.inputRow { display: flex; gap: 20px; align-items: flex-end; margin-top: 10px; }
+.nameInputWrapper { flex: 2; }
+.poolWrapper { flex: 1; min-width: 200px; }
+
+.poolToggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.poolToggle button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+.poolToggle button.activePool {
+  background: #f1c40f;
+  color: #000;
+  box-shadow: 0 4px 20px rgba(241, 196, 15, 0.2);
+}
+
+.mainInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.playersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.playerCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 16px;
+  box-sizing: border-box;
+}
+
+.playerHeader { display: flex; justify-content: space-between; margin-bottom: 15px; }
+
+.index { font-family: 'JetBrains Mono', monospace; opacity: 0.2; font-weight: bold; }
+
+.tag {
+  font-size: 0.6rem;
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-weight: 900;
+}
+
+.playerInputs { display: flex; gap: 15px; }
+.nameField { flex: 1; min-width: 0; }
+.jerseyField { width: 75px; flex-shrink: 0; }
+
+.smallLabel {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.minimalInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px;
+  border-radius: 8px;
+  color: #fff;
+  outline: none;
+  box-sizing: border-box;
+  font-weight: 600;
+}
+
+.actionCard { display: flex; justify-content: space-between; align-items: center; }
+
+.submitBtn {
+  background: #f1c40f;
+  color: #000;
+  border: none;
+  padding: 18px 40px;
+  border-radius: 12px;
+  font-weight: 900;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s ease;
+}
+
+.submitBtn:active { transform: scale(0.98); }
+
+/* Success Modal Styling */
+.successOverlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.successModal {
+  background: #0a0a0a; border: 1px solid rgba(241, 196, 15, 0.3); padding: 50px;
+  border-radius: 30px; text-align: center; max-width: 400px; width: 90%;
+}
+
+.successIcon { font-size: 3rem; color: #2ecc71; margin-bottom: 20px; }
+
+.qrBox { 
+  background: white; padding: 20px; border-radius: 20px; 
+  margin: 30px auto; width: fit-content;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.teamIdCode {
+  display: block; background: rgba(255,255,255,0.05);
+  padding: 10px; border-radius: 8px; font-family: monospace;
+  margin-bottom: 30px; color: #f1c40f;
+}
+
+.closeBtn {
+  width: 100%; background: #fff; color: #000; border: none;
+  padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer;
+}
+
+@media (max-width: 850px) {
+  .playersGrid { grid-template-columns: 1fr; }
+  .inputRow { flex-direction: column; align-items: stretch; }
+  .actionCard { flex-direction: column; gap: 20px; text-align: center; }
+}

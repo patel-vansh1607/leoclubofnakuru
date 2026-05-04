@@ -1,0 +1,26 @@
+.draftContainer { width: 100%; }
+
+.adminTeamCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.playerItem {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 0;
+}
+
+.idBadge {
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}

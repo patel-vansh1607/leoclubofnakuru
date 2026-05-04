@@ -8,7 +8,11 @@ import TeamGallery from './TeamGallery/TeamGallery';
 import PlayerProfile from './PlayerProfile/PlayerProfile'; 
 import Login from './Login/Login'; 
 import Dashboard from './Dashboard/Dashboard';
-import RoleManagement from './RoleManagement/RoleManagement'; // Line 11
+import RoleManagement from './RoleManagement/RoleManagement';
+import DraftTeams from './DraftTeams/DraftTeams';
+import AddTeam from './AddTeam/AddTeam';
+import PlayingTeams from './PlayingTeams/PlayingTeams'; 
+import TeamDetails from './TeamDetails/TeamDetails'; // Import the new Detail component
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -27,13 +31,20 @@ root.render(
           <Route path="dashboard" element={<Dashboard />}>
             <Route index element={<div style={{padding: '20px'}}><h2>DASHBOARD OVERVIEW</h2></div>} />
             
-            {/* Replace these <div> tags once you have the specific submission/approval files ready */}
             <Route path="submissions" element={<div>Submissions Page</div>} />
             <Route path="approvals" element={<div>Approvals Page</div>} />
             
             <Route path="teams" element={<TeamGallery />} /> 
+            <Route path="draft-teams" element={<DraftTeams />} />
+            <Route path="add-team" element={<AddTeam />} />
             
-            {/* Line 43: Properly using your imported RoleManagement component */}
+            {/* --- OVERSIGHT ROUTES --- */}
+            {/* List View: http://localhost:3000/dashboard/playing-teams */}
+            <Route path="playing-teams" element={<PlayingTeams />} />
+            
+            {/* Detail View: http://localhost:3000/dashboard/playing-teams/afcae177... */}
+            <Route path="playing-teams/:teamId" element={<TeamDetails />} />
+            
             <Route path="roles" element={<RoleManagement />} />
           </Route>
         </Route>

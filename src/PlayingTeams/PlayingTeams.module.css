@@ -1,0 +1,223 @@
+.container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.adminBadge {
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border: 1px solid rgba(241, 196, 15, 0.2);
+}
+
+.searchBox {
+  position: relative;
+  width: 300px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.searchBox input {
+  width: 100%;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 12px 12px 12px 45px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.searchBox input:focus {
+  outline: none;
+  border-color: #f1c40f;
+  background: #151515;
+}
+
+.mainTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.poolSwitch {
+  background: #111;
+  padding: 5px;
+  border-radius: 12px;
+  display: flex;
+  gap: 5px;
+}
+
+.poolSwitch button {
+  background: transparent;
+  border: none;
+  color: #555;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.poolSwitch button.active {
+  background: #f1c40f;
+  color: #000;
+}
+
+/* Team Grid */
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+.teamCard {
+  background: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.teamCard:hover {
+  transform: translateY(-5px);
+  border-color: #f1c40f;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.cardBody {
+  padding: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.teamName {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.captainInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f1c40f;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.capIcon {
+  opacity: 0.7;
+}
+
+.countBox {
+  background: #151515;
+  border: 1px solid #222;
+  padding: 10px 15px;
+  border-radius: 14px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.countNumber {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.countLabel {
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #444;
+  letter-spacing: 1px;
+}
+
+.cardFooter {
+  background: rgba(255,255,255,0.02);
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #1a1a1a;
+}
+
+.refId {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: #444;
+}
+
+.viewBtn {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #f1c40f;
+  letter-spacing: 1px;
+}
+
+/* Loader & States */
+.loaderContainer {
+  padding: 100px 0;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(241, 196, 15, 0.1);
+  border-top-color: #f1c40f;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyState {
+  padding: 100px 0;
+  text-align: center;
+  color: #333;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.2;
+}
