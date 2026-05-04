@@ -4,34 +4,39 @@ import { supabase } from '../supabaseClient';
 import s from './ScheduleMaker.module.css';
 
 const ScheduleMaker = () => {
-  const { userRole } = useOutletContext();
+  const { session } = useOutletContext();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     team_a: '',
     team_b: '',
-    pool: 'Boys',
+    pool: 'Boys', 
     scheduled_at: ''
   });
 
-  // Fetch only approved teams from Supabase
   useEffect(() => {
-    const fetchTeams = async () => {
-      const { data } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('status', 'approved');
-      setTeams(data || []);
+    const fetchAllTeams = async () => {
+      const { data, error } = await supabase.from('teams').select('*'); 
+      if (error) {
+        console.error("Supabase Error:", error);
+      } else {
+        console.log("Teams fetched from DB:", data); // Check your console!
+        setTeams(data || []);
+      }
     };
-    fetchTeams();
+    fetchAllTeams();
   }, []);
+
+  // Filter logic: Checks if 'pool' matches regardless of case
+  const filteredTeams = teams.filter(team => 
+    team.pool?.toLowerCase() === formData.pool.toLowerCase()
+  );
 
   const handleCreateMatch = async (e) => {
     e.preventDefault();
     if (formData.team_a === formData.team_b) return alert("Select two different teams!");
     setLoading(true);
 
-    // Auto-calculate the next match number
     const { count } = await supabase.from('matches').select('*', { count: 'exact', head: true });
     const nextMatchNo = (count || 0) + 1;
 
@@ -46,17 +51,12 @@ const ScheduleMaker = () => {
       score_b: 0
     }]);
 
-    if (error) {
-      alert("Error scheduling match: " + error.message);
-    } else {
+    if (!error) {
       alert(`Match ${nextMatchNo} Scheduled!`);
-      setFormData({ team_a: '', team_b: '', pool: 'Boys', scheduled_at: '' });
+      setFormData({ ...formData, team_a: '', team_b: '', scheduled_at: '' });
     }
     setLoading(false);
   };
-
-  // Only Master Admin can access this tool
-  if (userRole !== 'master_admin') return <div className={s.denied}>Access Restricted</div>;
 
   return (
     <div className={s.container}>
@@ -69,7 +69,7 @@ const ScheduleMaker = () => {
 
         <form onSubmit={handleCreateMatch} className={s.form}>
           <div className={s.section}>
-            <label>1. SELECT CATEGORY</label>
+            <label>MATCH CATEGORY</label>
             <select 
               className={s.input}
               value={formData.pool} 
@@ -89,8 +89,8 @@ const ScheduleMaker = () => {
                 value={formData.team_a} 
                 onChange={e => setFormData({...formData, team_a: e.target.value})}
               >
-                <option value="">Choose Team</option>
-                {teams.filter(t => t.pool === formData.pool).map(t => (
+                <option value="">Select {formData.pool} Team</option>
+                {filteredTeams.map(t => (
                   <option key={t.id} value={t.id}>{t.team_name}</option>
                 ))}
               </select>
@@ -106,8 +106,8 @@ const ScheduleMaker = () => {
                 value={formData.team_b} 
                 onChange={e => setFormData({...formData, team_b: e.target.value})}
               >
-                <option value="">Choose Team</option>
-                {teams.filter(t => t.pool === formData.pool).map(t => (
+                <option value="">Select {formData.pool} Team</option>
+                {filteredTeams.map(t => (
                   <option key={t.id} value={t.id}>{t.team_name}</option>
                 ))}
               </select>
@@ -115,7 +115,7 @@ const ScheduleMaker = () => {
           </div>
 
           <div className={s.section}>
-            <label>2. SCHEDULE TIME</label>
+            <label>KICK-OFF TIME</label>
             <input 
               type="datetime-local" 
               className={s.input}
