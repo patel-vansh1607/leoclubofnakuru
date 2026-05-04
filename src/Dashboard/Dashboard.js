@@ -1,33 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Icons from '@fortawesome/free-solid-svg-icons';
-
-import RoleManagement from '../RoleManagement/RoleManagement';
-import TeamApprovals from '../TeamApprovals/TeamApprovals'; 
 import s from './Dashboard.module.css';
 
 const Dashboard = () => {
   const { session } = useOutletContext();
-  const [view, setView] = useState('overview');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [userRole, setUserRole] = useState('scorer');
   const [tournamentDropdown, setTournamentDropdown] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
-  const dropdownRef = useRef(null);
   const leoLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572486/7932664-03_scur6z.png";
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setTournamentDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const fetchUserLevel = async () => {
@@ -38,83 +24,101 @@ const Dashboard = () => {
     fetchUserLevel();
   }, [session]);
 
+  const isActive = (path) => location.pathname === path;
+
+  const getViewTitle = () => {
+    const path = location.pathname;
+    if (path.includes('submissions')) return 'Submissions';
+    if (path.includes('approvals')) return 'Approvals';
+    if (path.includes('teams')) return 'Teams List';
+    if (path.includes('roles')) return 'Role Access';
+    return 'Overview';
+  };
+
   return (
     <div className={s.dashboardContainer}>
-      {/* Mobile Toggle - Hidden on Laptop */}
+      {/* Mobile Toggle */}
       <button className={s.mobileMenuBtn} onClick={() => setSidebarOpen(!isSidebarOpen)}>
         <FontAwesomeIcon icon={isSidebarOpen ? Icons.faTimes : Icons.faBars} />
       </button>
 
+      {isSidebarOpen && <div className={s.overlay} onClick={() => setSidebarOpen(false)} />}
+
       <aside className={`${s.sidebar} ${isSidebarOpen ? s.sidebarActive : ''}`}>
         <div className={s.brand}>
-          <img src={leoLogo} alt="Leo Logo" />
+          <img src={leoLogo} alt="Logo" className={s.logoImg} />
           <h2 className={s.brandText}>LEO<span>CUP</span></h2>
+          <span className={s.brandSub}>ADMIN PANEL</span>
         </div>
 
-        <nav className={s.nav}>
-          <button 
-            className={view === 'overview' ? s.activeBtn : s.navBtn} 
-            onClick={() => {setView('overview'); setSidebarOpen(false);}}
-          >
-            <FontAwesomeIcon icon={Icons.faColumns} /> Overview
-          </button>
-          
-          <div className={s.navGroup} ref={dropdownRef}>
-            <button 
-              className={tournamentDropdown || ['submissions', 'approvals', 'teams'].includes(view) ? s.activeBtn : s.navBtn} 
-              onClick={() => setTournamentDropdown(!tournamentDropdown)}
-            >
-              <FontAwesomeIcon icon={Icons.faTrophy} /> Tournament 
-              <FontAwesomeIcon icon={Icons.faChevronDown} className={`${s.chevron} ${tournamentDropdown ? s.rotate : ''}`} />
+        <div className={s.navScrollContainer}>
+          <nav className={s.nav}>
+            <p className={s.sectionLabel}>MENU</p>
+            <button className={isActive('/dashboard') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard'); setSidebarOpen(false); }}>
+              <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faColumns} /></div>
+              <span>Overview</span>
             </button>
             
-            <div className={`${s.dropdownMenu} ${tournamentDropdown ? s.show : ''}`}>
-              {['superadmin', 'master_admin'].includes(userRole) && (
-                <>
-                  <button className={view === 'submissions' ? s.innerActive : ''} onClick={() => {setView('submissions'); setSidebarOpen(false);}}>Submissions</button>
-                  <button className={view === 'approvals' ? s.innerActive : ''} onClick={() => {setView('approvals'); setSidebarOpen(false);}}>Approvals</button>
-                </>
-              )}
-              <button className={view === 'teams' ? s.innerActive : ''} onClick={() => {setView('teams'); setSidebarOpen(false);}}>Teams List</button>
+            <div className={s.navGroup}>
+              <button 
+                className={tournamentDropdown || location.pathname.includes('tournament') ? s.activeBtn : s.navBtn} 
+                onClick={() => setTournamentDropdown(!tournamentDropdown)}
+              >
+                <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faTrophy} /></div>
+                <span>Tournament</span>
+                <FontAwesomeIcon icon={Icons.faChevronDown} className={`${s.chevron} ${tournamentDropdown ? s.rotate : ''}`} />
+              </button>
+              
+              <div className={`${s.dropdownMenu} ${tournamentDropdown ? s.show : ''}`}>
+                <div className={s.dropLine} />
+                <div className={s.dropItems}>
+                  <button className={isActive('/dashboard/submissions') ? s.innerActive : s.innerBtn} onClick={() => { navigate('/dashboard/submissions'); setSidebarOpen(false); }}>Submissions</button>
+                  <button className={isActive('/dashboard/approvals') ? s.innerActive : s.innerBtn} onClick={() => { navigate('/dashboard/approvals'); setSidebarOpen(false); }}>Approvals</button>
+                  <button className={isActive('/dashboard/teams') ? s.innerActive : s.innerBtn} onClick={() => { navigate('/dashboard/teams'); setSidebarOpen(false); }}>Teams List</button>
+                </div>
+              </div>
+            </div>
+
+            {userRole === 'master_admin' && (
+              <>
+                <p className={s.sectionLabel}>SYSTEM</p>
+                <button className={isActive('/dashboard/roles') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/roles'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUserShield} /></div>
+                  <span>Role Access</span>
+                </button>
+              </>
+            )}
+          </nav>
+        </div>
+
+        <div className={s.sidebarFooter}>
+          <div className={s.userCard}>
+            <div className={s.avatar}>{session?.user?.email?.charAt(0).toUpperCase()}</div>
+            <div className={s.userMeta}>
+              <span className={s.userEmail}>{session?.user?.email.split('@')[0]}</span>
+              <span className={s.roleBadge}>{userRole.replace('_', ' ')}</span>
             </div>
           </div>
-
-          {userRole === 'master_admin' && (
-            <button 
-              className={view === 'roles' ? s.activeBtn : s.navBtn} 
-              onClick={() => {setView('roles'); setSidebarOpen(false);}}
-            >
-              <FontAwesomeIcon icon={Icons.faUserShield} /> Role Access
-            </button>
-          )}
-        </nav>
-
-        <button className={s.logoutBtn} onClick={() => supabase.auth.signOut()}>
-          <FontAwesomeIcon icon={Icons.faSignOutAlt} /> Logout
-        </button>
+          <button className={s.logoutBtn} onClick={() => supabase.auth.signOut()}>
+            <FontAwesomeIcon icon={Icons.faSignOutAlt} /> Logout
+          </button>
+        </div>
       </aside>
 
       <main className={s.mainContent}>
-        <header className={s.topBar}>
-          <h1 className={s.viewTitle}>{view.toUpperCase()}</h1>
-          <div className={s.userBadge}>{session?.user?.email}</div>
-        </header>
+        <div className={s.mobileHeader}>
+          <img src={leoLogo} alt="Logo" className={s.mobileLogo} />
+          <h2 className={s.mobileBrandText}>LEO<span>CUP</span></h2>
+        </div>
+
+        <div className={s.topBar}>
+          <h1 className={s.viewTitle}>{getViewTitle()}</h1>
+        </div>
         
         <div className={s.scrollArea}>
-          {view === 'roles' && <RoleManagement session={session} />}
-          {view === 'approvals' && <TeamApprovals session={session} />}
-          {view === 'submissions' && <TeamApprovals session={session} filter="pending" />}
-          {view === 'overview' && (
-            <div className={s.bentoGrid}>
-              <div className={`${s.bentoItem} ${s.welcomeCard}`}>
-                <span className={s.locationTag}>NAKURU, KENYA</span>
-                <h2 className={s.mainTitle}>Welcome, <span>Master</span></h2>
-                <div className={s.cardDivider}></div>
-                <p>Registration for Season 2 is active. You have full system clearance.</p>
-              </div>
-              {/* Add more bento items as needed */}
-            </div>
-          )}
+          <div className={s.contentWrapper}>
+            <Outlet context={{ session, userRole }} />
+          </div>
         </div>
       </main>
     </div>

@@ -1,88 +1,119 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { QRCodeCanvas } from 'qrcode.react';
-import styles from './TeamGallery.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as Icons from '@fortawesome/free-solid-svg-icons';
+import s from './TeamGallery.module.css';
 
 const TeamGallery = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('BOYS');
 
   useEffect(() => {
     const fetchAllData = async () => {
-      // Fetch teams and include their related players
       const { data, error } = await supabase
         .from('teams')
-        .select(`
-          *,
-          players (*)
-        `)
+        .select(`*, players (*)`)
         .order('created_at', { ascending: false });
 
       if (error) console.error("Error fetching rosters:", error);
       else setTeams(data);
       setLoading(false);
     };
-
     fetchAllData();
   }, []);
 
-  const renderSquads = (genderType) => {
-    const filteredTeams = teams.filter(team => team.gender === genderType);
+  const filteredTeams = teams.filter(team => team.gender === activeTab);
 
-    return (
-      <div className={styles.categorySection}>
-        <h2 className={styles.categoryTitle}>{genderType} DIVISION</h2>
-        <div className={styles.teamsGrid}>
-          {filteredTeams.map((team) => (
-            <div key={team.id} className={styles.teamWrapper}>
-              <div className={styles.teamHeader}>
-                <h3 className={styles.sakanaTeamName}>{team.team_name}</h3>
-                <span className={styles.squadId}>ID: {team.team_id}</span>
+  if (loading) return (
+    <div className={s.loaderContainer}>
+      <div className={s.spinner}></div>
+      <p>Loading tournament rosters...</p>
+    </div>
+  );
+
+  return (
+    <div className={s.galleryContainer}>
+      {/* Dashboard Sub-Header */}
+      <div className={s.pageHeader}>
+        <div className={s.headerText}>
+          <h2 className={s.title}>Registered Squads</h2>
+          <p className={s.subtitle}>Overview of all teams and player credentials for Season 2</p>
+        </div>
+        
+        <div className={s.tabSwitcher}>
+          <button 
+            className={activeTab === 'BOYS' ? s.tabActive : s.tabBtn} 
+            onClick={() => setActiveTab('BOYS')}
+          >
+            Boys Division
+          </button>
+          <button 
+            className={activeTab === 'GIRLS' ? s.tabActive : s.tabBtn} 
+            onClick={() => setActiveTab('GIRLS')}
+          >
+            Girls Division
+          </button>
+        </div>
+      </div>
+
+      <div className={s.statsBar}>
+        <div className={s.statItem}>
+          <span className={s.statValue}>{filteredTeams.length}</span>
+          <span className={s.statLabel}>Total Teams</span>
+        </div>
+        <div className={s.statItem}>
+          <span className={s.statValue}>
+            {filteredTeams.reduce((acc, team) => acc + (team.players?.length || 0), 0)}
+          </span>
+          <span className={s.statLabel}>Total Players</span>
+        </div>
+      </div>
+
+      <div className={s.teamsGrid}>
+        {filteredTeams.map((team) => (
+          <div key={team.id} className={s.teamCard}>
+            <div className={s.teamCardHeader}>
+              <div className={s.teamInfo}>
+                <h3 className={s.teamName}>{team.team_name}</h3>
+                <span className={s.teamId}>ID: {team.team_id}</span>
               </div>
-              
-              <div className={styles.playerList}>
-                {team.players.map((player) => (
-                  <div key={player.id} className={styles.playerRow}>
-                    <div className={styles.playerInfo}>
-                      <span className={styles.playerNum}>[{player.player_id.split('-').pop()}]</span>
-                      <span className={styles.playerName}>{player.name}</span>
-                    </div>
-                    {/* Unique QR for every player in the squad */}
-                    <div className={styles.miniQr}>
+              <div className={s.teamBadge}>
+                <FontAwesomeIcon icon={Icons.faUsers} /> {team.players?.length}
+              </div>
+            </div>
+
+            <div className={s.playerTable}>
+              <div className={s.tableHeader}>
+                <span>PLAYER NAME</span>
+                <span>ID & QR</span>
+              </div>
+              {team.players.map((player) => (
+                <div key={player.id} className={s.playerRow}>
+                  <div className={s.playerMain}>
+                    <span className={s.playerNumber}>{player.player_id.split('-').pop()}</span>
+                    <span className={s.playerName}>{player.name}</span>
+                  </div>
+                  
+                  <div className={s.playerAction}>
+                    <div className={s.qrWrapper}>
                       <QRCodeCanvas 
                         value={player.qr_string} 
-                        size={40} 
-                        bgColor="#3d041a" 
+                        size={32} 
+                        bgColor="transparent" 
                         fgColor="#f1c40f" 
+                        level="L"
                       />
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    );
-  };
-
-  if (loading) return <div className={styles.loader}>INITIALIZING ROSTERS...</div>;
-
-  return (
-    <>
-      <div className={styles.container}>
-        <div className={styles.scanlineOverlay}></div>
-        
-        <header className={styles.header}>
-          <h1 className={styles.sakanaTitle}>LEO CUP <span>S2 ROSTERS</span></h1>
-          <p className={styles.tag}>OFFICIAL REGISTERED SQUADS</p>
-        </header>
-
-        {renderSquads('BOYS')}
-        <div className={styles.divider}></div>
-        {renderSquads('GIRLS')}
-      </div>
-    </>
+    </div>
   );
 };
 
