@@ -12,7 +12,11 @@ import RoleManagement from './RoleManagement/RoleManagement';
 import DraftTeams from './DraftTeams/DraftTeams';
 import AddTeam from './AddTeam/AddTeam';
 import PlayingTeams from './PlayingTeams/PlayingTeams'; 
-import TeamDetails from './TeamDetails/TeamDetails'; // Import the new Detail component
+import TeamDetails from './TeamDetails/TeamDetails';
+
+// NEW: Tournament Operation Components
+import ScheduleMaker from './ScheduleMaker/ScheduleMaker';
+import ScoringPanel from './ScoringPanel/ScoringPanel';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -37,12 +41,16 @@ root.render(
             <Route path="teams" element={<TeamGallery />} /> 
             <Route path="draft-teams" element={<DraftTeams />} />
             <Route path="add-team" element={<AddTeam />} />
+
+            {/* --- TOURNAMENT OPERATIONS --- */}
+            {/* Master Admin only view */}
+            <Route path="schedule" element={<ScheduleMaker />} /> 
+            
+            {/* Scorer and Master Admin view */}
+            <Route path="scoring" element={<ScoringPanel />} />
             
             {/* --- OVERSIGHT ROUTES --- */}
-            {/* List View: http://localhost:3000/dashboard/playing-teams */}
             <Route path="playing-teams" element={<PlayingTeams />} />
-            
-            {/* Detail View: http://localhost:3000/dashboard/playing-teams/afcae177... */}
             <Route path="playing-teams/:teamId" element={<TeamDetails />} />
             
             <Route path="roles" element={<RoleManagement />} />

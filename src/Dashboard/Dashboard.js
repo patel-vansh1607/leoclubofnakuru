@@ -33,14 +33,15 @@ const Dashboard = () => {
     if (path.includes('teams')) return 'Teams List';
     if (path.includes('roles')) return 'Role Access';
     if (path.includes('add-team')) return 'Add New Team';
-    if (path.includes('playing-teams')) return 'Tournament Roster'; // Added Title
+    if (path.includes('playing-teams')) return 'Tournament Roster';
     if (path.includes('draft-teams')) return 'Draft Teams';
+    if (path.includes('schedule')) return 'Match Schedule'; // Added
+    if (path.includes('scoring')) return 'Live Scoring'; // Added
     return 'Overview';
   };
 
   return (
     <div className={s.dashboardContainer}>
-      {/* Mobile Toggle */}
       <button className={s.mobileMenuBtn} onClick={() => setSidebarOpen(!isSidebarOpen)}>
         <FontAwesomeIcon icon={isSidebarOpen ? Icons.faTimes : Icons.faBars} />
       </button>
@@ -62,6 +63,7 @@ const Dashboard = () => {
               <span>Overview</span>
             </button>
             
+            {/* TOURNAMENT SECTION */}
             <div className={s.navGroup}>
               <button 
                 className={tournamentDropdown || location.pathname.includes('tournament') ? s.activeBtn : s.navBtn} 
@@ -82,7 +84,18 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Restricted Access for Master Admin & Super Admin */}
+            {/* LIVE OPERATIONS: SCORER & MASTER ADMIN */}
+            {(userRole === 'master_admin' || userRole === 'scorer') && (
+              <>
+                <p className={s.sectionLabel}>LIVE OPERATIONS</p>
+                <button className={isActive('/dashboard/scoring') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/scoring'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faTableTennis} /></div>
+                  <span>Scoring Panel</span>
+                </button>
+              </>
+            )}
+
+            {/* MANAGEMENT: SUPER & MASTER ADMIN */}
             {(userRole === 'master_admin' || userRole === 'super_admin') && (
               <>
                 <p className={s.sectionLabel}>MANAGEMENT</p>
@@ -90,7 +103,6 @@ const Dashboard = () => {
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faPlusCircle} /></div>
                   <span>Add Team</span>
                 </button>
-                {/* NEW: Playing Teams Oversight */}
                 <button className={isActive('/dashboard/playing-teams') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/playing-teams'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUsers} /></div>
                   <span>Playing Teams</span>
@@ -98,9 +110,15 @@ const Dashboard = () => {
               </>
             )}
 
+            {/* SYSTEM: MASTER ADMIN ONLY */}
             {userRole === 'master_admin' && (
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
+                {/* Add Schedule Only for Master Admin */}
+                <button className={isActive('/dashboard/schedule') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/schedule'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faCalendarPlus} /></div>
+                  <span>Add Schedule</span>
+                </button>
                 <button className={isActive('/dashboard/roles') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/roles'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUserShield} /></div>
                   <span>Role Access</span>
