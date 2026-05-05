@@ -1,23 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
 const DraftTeams = () => {
   const [drafts, setDrafts] = useState([]);
-  const [ setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState(null);
 
-  const fetchDrafts = async () => {
+  // Memoizing fetchDrafts to prevent unnecessary re-renders and fix ESLint warnings
+  const fetchDrafts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('public_reg')
-      .select('*')
-      .order('created_at', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('public_reg')
+        .select('*')
+        .order('created_at', { ascending: true });
 
-    if (!error) setDrafts(data);
-    setLoading(false);
-  };
+      if (!error) {
+        setDrafts(data);
+      } else {
+        console.error("Error fetching drafts:", error.message);
+      }
+    } catch (err) {
+      console.error("Server error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  useEffect(() => { fetchDrafts(); }, []);
+  useEffect(() => {
+    fetchDrafts();
+  }, [fetchDrafts]);
 
   const formatDraftId = (index) => `DRAFT_${String(index + 1).padStart(4, '0')}`;
 
@@ -68,8 +80,6 @@ const DraftTeams = () => {
       gap: '8px',
       marginTop: '15px'
     },
-    
-    // Modal UI
     overlay: { 
       position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
       background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', 
@@ -95,37 +105,41 @@ const DraftTeams = () => {
     <div style={s.container}>
       <h2 style={s.title}>DRAFT_VAULT</h2>
       
-      <div style={s.grid}>
-        {drafts.map((team, index) => (
-          <div 
-            key={team.id} 
-            style={s.card} 
-            onClick={() => setSelectedTeam({...team, displayId: formatDraftId(index)})}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
-              e.currentTarget.style.borderColor = 'rgba(241, 196, 15, 0.4)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-            }}
-          >
-            <span style={s.idBadge}>{formatDraftId(index)}</span>
-            <h3 style={s.teamName}>{team.team_name}</h3>
-            
-            <div style={s.contactInfo}>
-              <span style={{ color: '#f1c40f' }}>WA:</span> 
-              <span>{team.captain_whatsapp}</span>
+      {loading ? (
+        <div style={{ opacity: 0.5, letterSpacing: '2px' }}>INITIALIZING DATABASE...</div>
+      ) : (
+        <div style={s.grid}>
+          {drafts.map((team, index) => (
+            <div 
+              key={team.id} 
+              style={s.card} 
+              onClick={() => setSelectedTeam({...team, displayId: formatDraftId(index)})}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                e.currentTarget.style.borderColor = 'rgba(241, 196, 15, 0.4)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+              }}
+            >
+              <span style={s.idBadge}>{formatDraftId(index)}</span>
+              <h3 style={s.teamName}>{team.team_name}</h3>
+              
+              <div style={s.contactInfo}>
+                <span style={{ color: '#f1c40f' }}>WA:</span> 
+                <span>{team.captain_whatsapp}</span>
+              </div>
+              
+              <div style={{ marginTop: '20px', opacity: 0.4, fontSize: '0.75rem', letterSpacing: '1px' }}>
+                {team.players?.length || 0} PLAYERS REGISTERED
+              </div>
             </div>
-            
-            <div style={{ marginTop: '20px', opacity: 0.4, fontSize: '0.75rem', letterSpacing: '1px' }}>
-              {team.players?.length} PLAYERS REGISTERED
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {selectedTeam && (
         <div style={s.overlay} onClick={() => setSelectedTeam(null)}>
@@ -145,25 +159,23 @@ const DraftTeams = () => {
               </div>
             </div>
 
-            {/* Inside the Player List in DraftTeams.js */}
-<div style={s.playerList}>
-  {selectedTeam.players?.map((p, idx) => (
-    <div key={idx} style={s.playerRow}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-        {/* Display Jersey Number instead of Index */}
-        <span style={{ color: '#f1c40f', fontWeight: '900', fontSize: '1.1rem', width: '35px' }}>
-            #{p.jersey}
-        </span>
-        <span style={{ fontSize: '1.2rem', fontWeight: '500' }}>
-            {p.name}
-        </span>
-      </div>
-      <span style={{ fontSize: '0.7rem', opacity: 0.2 }}>
-        {p.player_id}
-      </span>
-    </div>
-  ))}
-</div>
+            <div style={s.playerList}>
+              {selectedTeam.players?.map((p, idx) => (
+                <div key={idx} style={s.playerRow}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+                    <span style={{ color: '#f1c40f', fontWeight: '900', fontSize: '1.1rem', width: '35px' }}>
+                        #{p.jersey}
+                    </span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: '500' }}>
+                        {p.name}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.7rem', opacity: 0.2 }}>
+                    {p.player_id}
+                  </span>
+                </div>
+              ))}
+            </div>
             
             <div style={{ padding: '40px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
                 <button 

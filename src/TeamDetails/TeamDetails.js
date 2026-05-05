@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { QRCodeSVG } from 'qrcode.react';
 import { saveAs } from 'file-saver';
 import { useReactToPrint } from 'react-to-print';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as Icons from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faPrint, faDownload } from '@fortawesome/free-solid-svg-icons';
 import s from './TeamDetails.module.css';
 
 const TeamDetails = () => {
@@ -15,25 +15,32 @@ const TeamDetails = () => {
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Implementation of useReactToPrint for the "PRINT_ALL_CARDS" button
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: team ? `${team.team_name}_Roster` : 'Team_Roster',
+  });
 
-  useEffect(() => {
-    const fetchTeamData = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('teams')
-        .select(`*, players (*)`)
-        .eq('id', teamId)
-        .single();
-      
-      if (!error) setTeam(data);
-      setLoading(false);
-    };
-    if (teamId) fetchTeamData();
+  const fetchTeamData = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('teams')
+      .select(`*, players (*)`)
+      .eq('id', teamId)
+      .single();
+    
+    if (!error) setTeam(data);
+    setLoading(false);
   }, [teamId]);
 
-  // Download Helper
+  useEffect(() => {
+    if (teamId) fetchTeamData();
+  }, [teamId, fetchTeamData]);
+
+  // Download Helper for QR codes
   const downloadSVG = (elementId, fileName) => {
     const svg = document.getElementById(elementId);
+    if (!svg) return;
     const svgData = new XMLSerializer().serializeToString(svg);
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     saveAs(svgBlob, `${fileName.replace(/\s+/g, '_')}.svg`);
@@ -52,12 +59,12 @@ const TeamDetails = () => {
 
       <div className={s.headerNav}>
         <button className={s.backLink} onClick={() => navigate(-1)}>
-          <FontAwesomeIcon icon={Icons.faArrowLeft} /> BACK
+          <FontAwesomeIcon icon={faArrowLeft} /> BACK
         </button>
         <div className={s.headerActions}>
-          {/* <button className={s.actionBtn} onClick={handlePrint}> */}
-            {/* <FontAwesomeIcon icon={Icons.faPrint} /> PRINT_ALL_CARDS */}
-          {/* </button> */}
+          <button className={s.actionBtn} onClick={handlePrint}>
+            <FontAwesomeIcon icon={faPrint} /> PRINT_ALL_CARDS
+          </button>
         </div>
       </div>
 
@@ -77,11 +84,10 @@ const TeamDetails = () => {
           </div>
         </div>
 
-        {/* New Team Download Section on Hero */}
         <div className={s.teamQrContainer}>
           <QRCodeSVG value={team.team_id} size={80} bgColor="transparent" fgColor="#f1c40f" />
           <button className={s.teamDlBtn} onClick={() => downloadSVG('team-qr-main', `${team.team_name}_TEAM_CODE`)}>
-            <FontAwesomeIcon icon={Icons.faDownload} /> DOWNLOAD_TEAM_SVG
+            <FontAwesomeIcon icon={faDownload} /> DOWNLOAD_TEAM_SVG
           </button>
         </div>
       </div>
@@ -91,8 +97,9 @@ const TeamDetails = () => {
         <div className={s.rosterSection}>
           <h3 className={s.sectionTitle}>PLAYER_MANIFEST_2026</h3>
           <div className={s.playerGrid}>
-            {sortedPlayers.map((player, index) => (
+            {sortedPlayers.map((player) => (
               <div key={player.id} className={s.playerCard}>
+                {/* Hidden high-res QR for download */}
                 <div style={{ display: 'none' }}>
                   <QRCodeSVG id={`qr-${player.id}`} value={player.player_id} bgColor="none" fgColor="#000" />
                 </div>
@@ -110,7 +117,7 @@ const TeamDetails = () => {
                   className={s.downloadBtn} 
                   onClick={(e) => { e.stopPropagation(); downloadSVG(`qr-${player.id}`, player.name); }}
                 >
-                  <FontAwesomeIcon icon={Icons.faDownload} />
+                  <FontAwesomeIcon icon={faDownload} />
                 </button>
               </div>
             ))}

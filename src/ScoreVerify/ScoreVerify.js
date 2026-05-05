@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -32,17 +32,16 @@ const ScoreVerify = () => {
       osc.start(context.currentTime + start);
       osc.stop(context.currentTime + start + duration);
     };
-    playNote(660, 0, 0.15); // Tone A
-    playNote(880, 0.1, 0.2); // Tone B
+    playNote(660, 0, 0.15); 
+    playNote(880, 0.1, 0.2); 
   };
 
-  const verifyPlayer = async (scannedId) => {
+  const verifyPlayer = useCallback(async (scannedId) => {
     if (loading || player) return;
     setLoading(true);
     setError(null);
     
     try {
-      // Querying the players table using player_id (Text) instead of UUID id
       const { data, error: dbError } = await supabase
         .from('players')
         .select('*, teams(team_name)')
@@ -55,7 +54,6 @@ const ScoreVerify = () => {
       } else {
         playProChime();
         setPlayer(data);
-        // Clear scanner to save resources once player is found
         if (scannerRef.current) scannerRef.current.clear();
       }
     } catch (err) {
@@ -63,9 +61,9 @@ const ScoreVerify = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, player]); // Added dependencies for the callback
 
-  const startScanner = () => {
+  const startScanner = useCallback(() => {
     setPlayer(null);
     setError(null);
     setTimeout(() => {
@@ -78,16 +76,15 @@ const ScoreVerify = () => {
       scanner.render(verifyPlayer);
       scannerRef.current = scanner;
     }, 100);
-  };
+  }, [verifyPlayer]); // Added verifyPlayer as a dependency
 
   useEffect(() => {
     startScanner();
     return () => { if (scannerRef.current) scannerRef.current.clear(); };
-  }, []);
+  }, [startScanner]); // Now includes startScanner safely
 
   return (
     <div className={s.container}>
-      {/* 1. LOADING OVERLAY */}
       {loading && (
         <div className={s.loaderWrapper}>
           <div className={s.spinner}></div>
@@ -95,7 +92,6 @@ const ScoreVerify = () => {
         </div>
       )}
 
-      {/* 2. SCANNER VIEW (Only shows when not loading or showing results) */}
       {!player && !loading && (
         <div className={s.scanZone}>
           <div className={s.viewfinder}>
@@ -112,7 +108,6 @@ const ScoreVerify = () => {
         </div>
       )}
 
-      {/* 3. BENTO RESULT CARD */}
       {player && !loading && (
         <div className={s.resultWrapper}>
           <div className={s.successBadge}>
