@@ -3,10 +3,10 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faShield, 
   faCircleCheck, 
   faSync, 
-  faExclamationTriangle 
+  faExclamationTriangle, 
+  faQrcode 
 } from '@fortawesome/free-solid-svg-icons';
 import s from './ScoreVerify.module.css';
 
@@ -16,7 +16,7 @@ const ScoreVerify = () => {
   const [error, setError] = useState(null);
   const scannerRef = useRef(null);
 
-  // High-end double-tone chime (Success Sound)
+  // Custom Double-Tone Success Chime
   const playProChime = () => {
     const context = new (window.AudioContext || window.webkitAudioContext)();
     const playNote = (freq, start, duration) => {
@@ -32,15 +32,17 @@ const ScoreVerify = () => {
       osc.start(context.currentTime + start);
       osc.stop(context.currentTime + start + duration);
     };
-    playNote(660, 0, 0.15); 
-    playNote(880, 0.1, 0.2); 
+    playNote(660, 0, 0.15); // Tone A
+    playNote(880, 0.1, 0.2); // Tone B
   };
 
   const verifyPlayer = async (scannedId) => {
     if (loading || player) return;
     setLoading(true);
+    setError(null);
     
     try {
+      // Querying the players table using player_id (Text) instead of UUID id
       const { data, error: dbError } = await supabase
         .from('players')
         .select('*, teams(team_name)')
@@ -48,15 +50,16 @@ const ScoreVerify = () => {
         .single();
 
       if (dbError || !data) {
-        setError("Unknown Player ID");
+        setError("INVALID PLAYER ID");
         setTimeout(() => setError(null), 3000);
       } else {
         playProChime();
         setPlayer(data);
+        // Clear scanner to save resources once player is found
         if (scannerRef.current) scannerRef.current.clear();
       }
     } catch (err) {
-      setError("Connection Error");
+      setError("SERVER CONNECTION ERROR");
     } finally {
       setLoading(false);
     }
@@ -84,11 +87,22 @@ const ScoreVerify = () => {
 
   return (
     <div className={s.container}>
-      {!player ? (
+      {/* 1. LOADING OVERLAY */}
+      {loading && (
+        <div className={s.loaderWrapper}>
+          <div className={s.spinner}></div>
+          <p className={s.loaderText}>VERIFYING DATABASE...</p>
+        </div>
+      )}
+
+      {/* 2. SCANNER VIEW (Only shows when not loading or showing results) */}
+      {!player && !loading && (
         <div className={s.scanZone}>
           <div className={s.viewfinder}>
             <div id="reader"></div>
-            <div className={s.overlayLabel}>SCAN PLAYER PASS</div>
+            <div className={s.overlayLabel}>
+                <FontAwesomeIcon icon={faQrcode} /> LEO CUP SCANNER
+            </div>
           </div>
           {error && (
             <div className={s.toastError}>
@@ -96,37 +110,40 @@ const ScoreVerify = () => {
             </div>
           )}
         </div>
-      ) : (
+      )}
+
+      {/* 3. BENTO RESULT CARD */}
+      {player && !loading && (
         <div className={s.resultWrapper}>
           <div className={s.successBadge}>
             <FontAwesomeIcon icon={faCircleCheck} />
-            VERIFIED
+            PLAYER VERIFIED
           </div>
 
           <div className={s.bentoGrid}>
             <div className={`${s.bentoBox} ${s.full}`}>
-              <span className={s.label}>PLAYER NAME</span>
+              <span className={s.label}>FULL NAME</span>
               <h2 className={s.value}>{player.name}</h2>
             </div>
 
             <div className={s.bentoBox}>
-              <span className={s.label}>TEAM</span>
+              <span className={s.label}>TEAM NAME</span>
               <p className={s.value}>{player.teams?.team_name || 'N/A'}</p>
             </div>
 
             <div className={s.bentoBox}>
-              <span className={s.label}>JERSEY</span>
+              <span className={s.label}>JERSEY NO.</span>
               <p className={s.valueHighlight}>#{player.jersey_number || '00'}</p>
             </div>
 
             <div className={`${s.bentoBox} ${s.full}`}>
-              <span className={s.label}>OFFICIAL ID</span>
+              <span className={s.label}>SYSTEM IDENTIFIER</span>
               <p className={s.idValue}>{player.player_id}</p>
             </div>
           </div>
 
           <button className={s.actionBtn} onClick={startScanner}>
-            <FontAwesomeIcon icon={faSync} /> NEXT SCAN
+            <FontAwesomeIcon icon={faSync} /> SCAN NEXT PLAYER
           </button>
         </div>
       )}
