@@ -13,10 +13,7 @@ import DraftTeams from './DraftTeams/DraftTeams';
 import AddTeam from './AddTeam/AddTeam';
 import PlayingTeams from './PlayingTeams/PlayingTeams'; 
 import TeamDetails from './TeamDetails/TeamDetails';
-
-// NEW: Tournament Operation Components
-import ScheduleMaker from './ScheduleMaker/ScheduleMaker';
-import ScoringPanel from './ScoringPanel/ScoringPanel';
+import ScorerVerify from './ScoreVerify/ScoreVerify';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -37,23 +34,20 @@ root.render(
             
             <Route path="submissions" element={<div>Submissions Page</div>} />
             <Route path="approvals" element={<div>Approvals Page</div>} />
-            
             <Route path="teams" element={<TeamGallery />} /> 
-            <Route path="draft-teams" element={<DraftTeams />} />
+            
+            {/* --- SCORER TOOLS (INSIDE DASHBOARD) --- */}
+            <Route path="verify-player" element={<ScorerVerify />} />
+            
+            {/* --- MANAGEMENT ROUTES --- */}
             <Route path="add-team" element={<AddTeam />} />
-
-            {/* --- TOURNAMENT OPERATIONS --- */}
-            {/* Master Admin only view */}
-            <Route path="schedule" element={<ScheduleMaker />} /> 
-            
-            {/* Scorer and Master Admin view */}
-            <Route path="scoring" element={<ScoringPanel />} />
-            
-            {/* --- OVERSIGHT ROUTES --- */}
             <Route path="playing-teams" element={<PlayingTeams />} />
             <Route path="playing-teams/:teamId" element={<TeamDetails />} />
             
+            {/* --- MASTER ADMIN ONLY --- */}
+            <Route path="master-oversight" element={<div>Master Admin Control Panel</div>} />
             <Route path="roles" element={<RoleManagement />} />
+            <Route path="draft-teams" element={<DraftTeams />} />
           </Route>
         </Route>
       </Routes>

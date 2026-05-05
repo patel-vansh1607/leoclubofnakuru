@@ -1,0 +1,144 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 70vh;
+}
+
+/* Hide library "Powered By" text */
+#reader__dashboard_section_csr span, 
+#reader__status_span {
+  display: none !important;
+}
+
+.scanZone {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+.viewfinder {
+  border-radius: 30px;
+  overflow: hidden;
+  border: 4px solid rgba(241, 196, 15, 0.3);
+  background: #000;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.overlayLabel {
+  background: #f1c40f;
+  color: #000;
+  font-weight: 800;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+}
+
+/* Result Card - Bento Style */
+.resultWrapper {
+  width: 100%;
+  max-width: 450px;
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.successBadge {
+  background: #2ecc71;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+.bentoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bentoBox {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.full { grid-column: span 2; }
+
+.label {
+  display: block;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.valueHighlight {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #f1c40f;
+  margin: 0;
+}
+
+.idValue {
+  font-family: 'Courier New', Courier, monospace;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.actionBtn {
+  width: 100%;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 18px;
+  border-radius: 18px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.toastError {
+  position: absolute;
+  bottom: -60px;
+  left: 0; right: 0;
+  background: #e74c3c;
+  color: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .container { padding: 10px; }
+  .value { font-size: 1.1rem; }
+  .bentoBox { padding: 15px; }
+}

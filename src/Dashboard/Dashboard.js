@@ -35,8 +35,8 @@ const Dashboard = () => {
     if (path.includes('add-team')) return 'Add New Team';
     if (path.includes('playing-teams')) return 'Tournament Roster';
     if (path.includes('draft-teams')) return 'Draft Teams';
-    if (path.includes('schedule')) return 'Match Schedule'; // Added
-    if (path.includes('scoring')) return 'Live Scoring'; // Added
+    if (path.includes('master-oversight')) return 'Master Oversight';
+    if (path.includes('verify-player')) return 'Field Verification';
     return 'Overview';
   };
 
@@ -51,8 +51,10 @@ const Dashboard = () => {
       <aside className={`${s.sidebar} ${isSidebarOpen ? s.sidebarActive : ''}`}>
         <div className={s.brand}>
           <img src={leoLogo} alt="Logo" className={s.logoImg} />
-          <h2 className={s.brandText}>LEO<span>CUP</span></h2>
-          <span className={s.brandSub}>ADMIN PANEL</span>
+          <div className={s.brandInfo}>
+            <h2 className={s.brandText}>LEO<span>CUP</span></h2>
+            <span className={s.brandSub}>ADMIN PANEL</span>
+          </div>
         </div>
 
         <div className={s.navScrollContainer}>
@@ -66,7 +68,7 @@ const Dashboard = () => {
             {/* TOURNAMENT SECTION */}
             <div className={s.navGroup}>
               <button 
-                className={tournamentDropdown || location.pathname.includes('tournament') ? s.activeBtn : s.navBtn} 
+                className={tournamentDropdown || location.pathname.includes('submissions') || location.pathname.includes('approvals') || location.pathname.includes('teams') ? s.activeBtn : s.navBtn} 
                 onClick={() => setTournamentDropdown(!tournamentDropdown)}
               >
                 <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faTrophy} /></div>
@@ -84,13 +86,13 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* LIVE OPERATIONS: SCORER & MASTER ADMIN */}
-            {(userRole === 'master_admin' || userRole === 'scorer') && (
+            {/* FIELD TOOLS: SCORER, SUPER & MASTER ADMIN */}
+            {(userRole === 'master_admin' || userRole === 'super_admin' || userRole === 'scorer') && (
               <>
-                <p className={s.sectionLabel}>LIVE OPERATIONS</p>
-                <button className={isActive('/dashboard/scoring') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/scoring'); setSidebarOpen(false); }}>
-                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faTableTennis} /></div>
-                  <span>Scoring Panel</span>
+                <p className={s.sectionLabel}>FIELD TOOLS</p>
+                <button className={isActive('/dashboard/verify-player') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/verify-player'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faQrcode} /></div>
+                  <span>Verify Player</span>
                 </button>
               </>
             )}
@@ -114,10 +116,9 @@ const Dashboard = () => {
             {userRole === 'master_admin' && (
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
-                {/* Add Schedule Only for Master Admin */}
-                <button className={isActive('/dashboard/schedule') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/schedule'); setSidebarOpen(false); }}>
-                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faCalendarPlus} /></div>
-                  <span>Add Schedule</span>
+                <button className={isActive('/dashboard/master-oversight') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/master-oversight'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faChessKing} /></div>
+                  <span>Master Oversight</span>
                 </button>
                 <button className={isActive('/dashboard/roles') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/roles'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUserShield} /></div>
