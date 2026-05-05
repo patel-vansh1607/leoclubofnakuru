@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -15,8 +15,8 @@ const ScoreVerify = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const scannerRef = useRef(null);
+  const isProcessing = useRef(false); // Ref to prevent race conditions during rapid scans
 
-  // Custom Double-Tone Success Chime
   const playProChime = () => {
     const context = new (window.AudioContext || window.webkitAudioContext)();
     const playNote = (freq, start, duration) => {
@@ -37,7 +37,10 @@ const ScoreVerify = () => {
   };
 
   const verifyPlayer = useCallback(async (scannedId) => {
-    if (loading || player) return;
+    // If already processing or player shown, exit immediately for speed
+    if (isProcessing.current || player) return;
+    
+    isProcessing.current = true;
     setLoading(true);
     setError(null);
     
@@ -50,45 +53,62 @@ const ScoreVerify = () => {
 
       if (dbError || !data) {
         setError("INVALID PLAYER ID");
-        setTimeout(() => setError(null), 3000);
+        isProcessing.current = false; // Allow re-scan immediately
+        setTimeout(() => setError(null), 2000);
       } else {
         playProChime();
         setPlayer(data);
-        if (scannerRef.current) scannerRef.current.clear();
+        if (scannerRef.current) {
+          scannerRef.current.clear().catch(err => console.error("Failed to clear", err));
+        }
       }
     } catch (err) {
-      setError("SERVER CONNECTION ERROR");
+      setError("SERVER ERROR");
+      isProcessing.current = false;
     } finally {
       setLoading(false);
     }
-  }, [loading, player]); // Added dependencies for the callback
+  }, [player]);
 
   const startScanner = useCallback(() => {
+    isProcessing.current = false;
     setPlayer(null);
     setError(null);
+
+    // Small delay to ensure the DOM element #reader is ready
     setTimeout(() => {
-      const scanner = new Html5QrcodeScanner('reader', {
-        fps: 20,
+      const config = {
+        fps: 60, // Cranked up for high-speed tracking
         qrbox: { width: 250, height: 250 },
         aspectRatio: 1.0,
-        showTorchButtonIfSupported: true,
+        // Prioritize the back camera and disable video selection UI for speed
+        rememberLastUsedCamera: true,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+      };
+
+      const scanner = new Html5QrcodeScanner('reader', config, false);
+      scanner.render(verifyPlayer, (err) => {
+        // Silent fail on scan errors (common during movement) to keep it smooth
       });
-      scanner.render(verifyPlayer);
       scannerRef.current = scanner;
-    }, 100);
-  }, [verifyPlayer]); // Added verifyPlayer as a dependency
+    }, 50);
+  }, [verifyPlayer]);
 
   useEffect(() => {
     startScanner();
-    return () => { if (scannerRef.current) scannerRef.current.clear(); };
-  }, [startScanner]); // Now includes startScanner safely
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(err => console.error(err));
+      }
+    };
+  }, [startScanner]);
 
   return (
     <div className={s.container}>
       {loading && (
         <div className={s.loaderWrapper}>
           <div className={s.spinner}></div>
-          <p className={s.loaderText}>VERIFYING DATABASE...</p>
+          <p className={s.loaderText}>FAST-TRACKING...</p>
         </div>
       )}
 
@@ -97,7 +117,7 @@ const ScoreVerify = () => {
           <div className={s.viewfinder}>
             <div id="reader"></div>
             <div className={s.overlayLabel}>
-                <FontAwesomeIcon icon={faQrcode} /> LEO CUP SCANNER
+                <FontAwesomeIcon icon={faQrcode} /> READY FOR SCAN
             </div>
           </div>
           {error && (
@@ -111,34 +131,26 @@ const ScoreVerify = () => {
       {player && !loading && (
         <div className={s.resultWrapper}>
           <div className={s.successBadge}>
-            <FontAwesomeIcon icon={faCircleCheck} />
-            PLAYER VERIFIED
+            <FontAwesomeIcon icon={faCircleCheck} /> VERIFIED
           </div>
 
           <div className={s.bentoGrid}>
             <div className={`${s.bentoBox} ${s.full}`}>
-              <span className={s.label}>FULL NAME</span>
+              <span className={s.label}>PLAYER</span>
               <h2 className={s.value}>{player.name}</h2>
             </div>
-
             <div className={s.bentoBox}>
-              <span className={s.label}>TEAM NAME</span>
-              <p className={s.value}>{player.teams?.team_name || 'N/A'}</p>
+              <span className={s.label}>TEAM</span>
+              <p className={s.value}>{player.teams?.team_name || 'UNASSIGNED'}</p>
             </div>
-
             <div className={s.bentoBox}>
-              <span className={s.label}>JERSEY NO.</span>
+              <span className={s.label}>NO.</span>
               <p className={s.valueHighlight}>#{player.jersey_number || '00'}</p>
-            </div>
-
-            <div className={`${s.bentoBox} ${s.full}`}>
-              <span className={s.label}>SYSTEM IDENTIFIER</span>
-              <p className={s.idValue}>{player.player_id}</p>
             </div>
           </div>
 
           <button className={s.actionBtn} onClick={startScanner}>
-            <FontAwesomeIcon icon={faSync} /> SCAN NEXT PLAYER
+            <FontAwesomeIcon icon={faSync} /> NEXT SCAN
           </button>
         </div>
       )}
