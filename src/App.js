@@ -50,7 +50,7 @@ function App() {
    */
   const checkUserStatus = async (currentSession) => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', currentSession.user.id)

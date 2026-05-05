@@ -15,11 +15,6 @@ const TeamDetails = () => {
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Print Logic
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: `${team?.team_name}_Manifest`,
-  });
 
   useEffect(() => {
     const fetchTeamData = async () => {

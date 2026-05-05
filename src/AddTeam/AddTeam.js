@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { QRCodeCanvas } from 'qrcode.react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldHalved, faUsers, faCloudUploadAlt, faCheckCircle, faVenusMars } from '@fortawesome/free-solid-svg-icons';
+import { faShieldHalved, faUsers, faCloudUploadAlt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import s from './AddTeam.module.css';
 
 const AddTeam = () => {

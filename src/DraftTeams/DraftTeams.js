@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 
 const DraftTeams = () => {
   const [drafts, setDrafts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [ setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState(null);
 
   const fetchDrafts = async () => {
