@@ -35,32 +35,51 @@ const ScheduleMaker = () => {
 
   const handleCreateMatch = async (e) => {
     e.preventDefault();
-    if (formData.team_a === formData.team_b) return alert("Select two different teams!");
+    
+    // 1. Validation: Prevent RangeError by ensuring fields are filled
+    if (!formData.date || !formData.time) {
+      return alert("Please select both a date and a time.");
+    }
+    if (formData.team_a === formData.team_b) {
+      return alert("Select two different teams!");
+    }
+
     setLoading(true);
 
-    const nextMatchNo = matchCount + 1;
-    const combinedDateTime = `${formData.date}T${formData.time}:00`;
+    try {
+      // 2. Safe Date Construction
+      const scheduledAt = new Date(`${formData.date}T${formData.time}`);
+      
+      if (isNaN(scheduledAt.getTime())) {
+        throw new Error("Invalid date or time selected.");
+      }
 
-    const { error } = await supabase.from('matches').insert([{
-      match_no: nextMatchNo,
-      team_a: formData.team_a,
-      team_b: formData.team_b,
-      pool: formData.pool,
-      scheduled_at: combinedDateTime,
-      venue: formData.venue,
-      status: 'upcoming',
-      score_a: 0,
-      score_b: 0
-    }]);
+      const nextMatchNo = matchCount + 1;
 
-    if (!error) {
-      alert(`Match ${nextMatchNo} Scheduled Successfully!`);
+      const { error } = await supabase.from('matches').insert([{
+        match_no: nextMatchNo,
+        team_a: formData.team_a,
+        team_b: formData.team_b,
+        pool: formData.pool,
+        scheduled_at: scheduledAt.toISOString(),
+        venue: formData.venue,
+        status: 'upcoming',
+        score_a: 0,
+        score_b: 0
+      }]);
+
+      if (error) throw error;
+
+      alert(`Match #${nextMatchNo} Scheduled Successfully!`);
       setMatchCount(nextMatchNo);
       setFormData({ ...formData, team_a: '', team_b: '', date: '', time: '', venue: '' });
-    } else {
-      console.error(error);
+      
+    } catch (err) {
+      console.error("Schedule Error:", err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -76,7 +95,6 @@ const ScheduleMaker = () => {
         </div>
 
         <form onSubmit={handleCreateMatch} className={s.form}>
-          {/* CATEGORY & VENUE */}
           <div className={s.infoGrid}>
             <div className={s.section}>
               <label>TOURNAMENT CATEGORY</label>
@@ -103,8 +121,7 @@ const ScheduleMaker = () => {
             </div>
           </div>
 
-          {/* TEAMS SELECTION */}
-          <div className={s.matchGrid}>
+          <div className={s.matchRow}>
             <div className={s.inputGroup}>
               <label>TEAM A (HOME)</label>
               <select 
@@ -138,7 +155,6 @@ const ScheduleMaker = () => {
             </div>
           </div>
 
-          {/* DATE & ALARM-STYLE TIME */}
           <div className={s.infoGrid}>
             <div className={s.section}>
               <label>DATE</label>
@@ -163,7 +179,7 @@ const ScheduleMaker = () => {
           </div>
 
           <button type="submit" disabled={loading} className={s.submitBtn}>
-            {loading ? 'INITIALIZING...' : 'CONFIRM & PUBLISH MATCH'}
+            {loading ? 'PUBLISHING...' : 'CONFIRM & PUBLISH MATCH'}
           </button>
         </form>
       </div>
