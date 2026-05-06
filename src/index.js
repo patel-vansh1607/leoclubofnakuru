@@ -23,6 +23,7 @@ root.render(
       <Routes>
         <Route path="/" element={<App />}>
           <Route index element={<div style={{ textAlign: 'center', padding: '100px' }}><h1>Leo Cup Home</h1></div>} />
+          <Route path="registration" element={<Registration />} />
           <Route path="rosters" element={<TeamGallery />} />
           <Route path="profile/:playerId" element={<PlayerProfile />} />
           <Route path="admin" element={<Login />} />

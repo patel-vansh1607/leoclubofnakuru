@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import loginStyles from './Login.module.css';
+import Navbar from '../Navbar/Navbar';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -27,6 +28,8 @@ const Login = () => {
   };
 
   return (
+<>
+<Navbar />
     <div className={loginStyles.viewportWrapper}>
       <div className={loginStyles.loginCard}>
         <div className={loginStyles.headerArea}>
@@ -85,6 +88,7 @@ const Login = () => {
         </footer>
       </div>
     </div>
+</>
   );
 };
 

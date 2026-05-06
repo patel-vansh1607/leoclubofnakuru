@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import styles from './Navbar.module.css';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Auto-detect if we are on localhost
+  const isLocal = window.location.hostname === "localhost";
+
+  // Configuration for navigation
+  const MAIN_URL = isLocal ? "http://localhost:3000" : "https://leofootball.online";
 
   const leoLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572486/7932664-03_scur6z.png";
   const lionsLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572552/79326644-03_bknyzb.png";
@@ -27,11 +32,12 @@ const Navbar = () => {
         <div className={`${styles.links} ${isMenuOpen ? styles.linksOpen : ''}`}>
           <button className={styles.closeBtn} onClick={closeMenu}>&times;</button>
           
-          <Link to="/" className={styles.link} onClick={closeMenu}>HOME</Link>
-          <Link to="/registration" className={styles.link} onClick={closeMenu}>REGISTER</Link>
-          <Link to="/about" className={styles.link} onClick={closeMenu}>ABOUT</Link>
-          <Link to="/contact" className={styles.link} onClick={closeMenu}>CONTACT</Link>
-          <Link to="/admin" className={`${styles.link} ${styles.adminBtn}`} onClick={closeMenu}>ADMIN</Link>
+          <a href={`${MAIN_URL}/`} className={styles.link} onClick={closeMenu}>HOME</a>
+          <a href={`${MAIN_URL}/about`} className={styles.link} onClick={closeMenu}>ABOUT</a>
+          <a href={`${MAIN_URL}/contact`} className={styles.link} onClick={closeMenu}>CONTACT</a>
+          
+          {/* Admin link - access remains restricted to Vansh's authorization */}
+          <a href={`${MAIN_URL}/admin`} className={`${styles.link} ${styles.adminBtn}`} onClick={closeMenu}>ADMIN</a>
         </div>
 
         <div className={styles.navRight}>
