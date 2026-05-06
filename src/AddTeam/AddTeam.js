@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { QRCodeCanvas } from 'qrcode.react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldHalved, faUsers, faCloudUploadAlt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faShieldHalved, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import s from './AddTeam.module.css';
 
 const AddTeam = () => {
@@ -17,7 +17,7 @@ const AddTeam = () => {
     let isUnique = false;
     while (!isUnique) {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
-      id = `LEO-CUP-${randomNum}`; // Standardized ID for the scanner
+      id = `LEO-CUP-${randomNum}`; 
       if (!existingSet.has(id)) isUnique = true;
     }
     return id;
@@ -49,11 +49,11 @@ const AddTeam = () => {
         const customPlayerId = generateUniqueID(usedIDs);
         usedIDs.add(customPlayerId);
         return {
-          player_id: customPlayerId, // Primary reference for scanning
+          player_id: customPlayerId,
           team_id: teamData.id,
           name: p.name.toUpperCase(),
           jersey_number: p.jersey,
-          qr_string: customPlayerId // Store ONLY the ID string
+          qr_string: customPlayerId
         };
       });
 
@@ -115,11 +115,10 @@ const AddTeam = () => {
             <FontAwesomeIcon icon={faCheckCircle} className={s.successIcon} />
             <h2>TEAM DEPLOYED</h2>
             <div className={s.qrBox}>
-              {/* This stores the RAW ID for instant scanning */}
               <QRCodeCanvas value={successData.playerIds[0]} size={200} level="H" includeMargin={true} />
             </div>
-            <p>Example Captain ID: {successData.playerIds[0]}</p>
-            <button onClick={() => setSuccessData(null)}>CONTINUE</button>
+            <p>ID: {successData.playerIds[0]}</p>
+            <button onClick={() => setSuccessData(null)} className={s.closeBtn}>CONTINUE</button>
           </div>
         </div>
       )}

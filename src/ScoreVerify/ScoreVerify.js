@@ -7,16 +7,14 @@ import s from './ScoreVerify.module.css';
 
 const ScoreVerify = () => {
   const [player, setPlayer] = useState(null);
-  const [loading, setLoading] = useState(false);
+  // Removed 'loading' since it was unused
   const [status, setStatus] = useState("Initializing...");
   const scannerRef = useRef(null);
   const isProcessing = useRef(false);
 
   const handleScan = useCallback(async (decodedText) => {
-    // 1. LOG EVERYTHING IMMEDIATELY
     console.log("🔍 RAW DATA DETECTED:", decodedText);
 
-    // 2. CHECK FORMAT (Case-insensitive check for reliability)
     const upperText = decodedText.toUpperCase();
     if (isProcessing.current || !upperText.includes('LEO-CUP-')) {
       if (isProcessing.current) console.warn("⏳ Busy processing another scan...");
@@ -24,16 +22,18 @@ const ScoreVerify = () => {
     }
 
     console.log("🎯 VALID ID DETECTED. FETCHING...");
-    isProcessing.current = true; // LOCK
-    setLoading(true);
+    isProcessing.current = true;
     setStatus("VERIFYING ID...");
 
     try {
-      const { data, error } = await supabase
+      // Renamed unused 'error' to '_error' to satisfy linter or removed if not needed
+      const { data, error: _error } = await supabase
         .from('players')
         .select('name, jersey_number, teams(team_name)')
-        .eq('player_id', upperText) // Using the exact ID from the QR
+        .eq('player_id', upperText)
         .single();
+
+      if (_error) throw _error;
 
       if (data) {
         console.log("✅ MATCH FOUND:", data.name);
@@ -45,7 +45,6 @@ const ScoreVerify = () => {
       } else {
         console.error("❌ DB CHECK: ID not found in Players table.");
         setStatus("ID NOT REGISTERED");
-        // Release lock after 2 seconds to allow re-scan
         setTimeout(() => {
           isProcessing.current = false;
           setStatus("READY FOR SCAN");
@@ -54,12 +53,12 @@ const ScoreVerify = () => {
     } catch (err) {
       console.error("🚨 CRITICAL DB ERROR:", err);
       isProcessing.current = false;
-    } finally {
-      setLoading(false);
+      setStatus("ERROR FETCHING DATA");
     }
   }, []);
 
-  const startScanner = async () => {
+  // Wrapped in useCallback to fix useEffect dependency warning
+  const startScanner = useCallback(async () => {
     console.log("📸 OPENING CAMERA...");
     setPlayer(null);
     isProcessing.current = false;
@@ -69,10 +68,8 @@ const ScoreVerify = () => {
     scannerRef.current = html5QrCode;
 
     try {
-      // Configuration for instant detection
       const config = { 
-        fps: 30, // High frame rate
-        // We removed qrbox so it scans the WHOLE screen, not just the center
+        fps: 30, 
         aspectRatio: 1.0 
       };
 
@@ -80,10 +77,7 @@ const ScoreVerify = () => {
         { facingMode: "environment" }, 
         config, 
         handleScan,
-        (errorMessage) => {
-           // This fires every frame it DOESN'T find a QR. 
-           // Leave empty to avoid spamming the console.
-        }
+        () => {} // Empty error callback
       );
       
       console.log("🟢 SCANNER ACTIVE - FULL SCREEN MODE");
@@ -92,7 +86,7 @@ const ScoreVerify = () => {
       console.error("🔴 CAMERA INIT ERROR:", err);
       setStatus("ERROR: CHECK PERMISSIONS");
     }
-  };
+  }, [handleScan]);
 
   useEffect(() => {
     startScanner();
@@ -101,7 +95,7 @@ const ScoreVerify = () => {
         scannerRef.current.stop().catch(e => console.log("Cleanup error", e));
       }
     };
-  }, []);
+  }, [startScanner]); // startScanner is now a stable dependency
 
   return (
     <div className={s.container}>
@@ -109,7 +103,6 @@ const ScoreVerify = () => {
         <div className={s.scanZone}>
           <div className={s.readerWrapper}>
             <div id="reader" className={s.fullReader}></div>
-            {/* Visual Scan Line */}
             <div className={s.scannerOverlay}>
                <div className={s.scanLine}></div>
             </div>
