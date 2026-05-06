@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faTrash, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import {  faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import s from './Messages.module.css';
 
 const Messages = () => {

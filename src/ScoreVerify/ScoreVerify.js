@@ -3,8 +3,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Howl } from 'howler';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faBolt, 
+import {  
   faCircleNotch, 
   faCheckCircle, 
   faTimesCircle, 
@@ -19,6 +18,7 @@ const ScoreVerify = () => {
   const scannerRef = useRef(null);
   const isProcessing = useRef(false);
 
+  // Initializing sounds inside useRef
   const sounds = useRef({
     success: new Howl({ src: ['https://www.reactsounds.com/sounds/notification/success.mp3'], volume: 0.8 }),
     error: new Howl({ src: ['https://www.reactsounds.com/sounds/notification/error.mp3'], volume: 0.8 }),
@@ -56,7 +56,6 @@ const ScoreVerify = () => {
       setStatus('error');
     }
 
-    // Auto-Reset logic for "Quick Scan"
     setTimeout(() => {
       setStatus('ready');
       setPlayer(null);
@@ -67,15 +66,18 @@ const ScoreVerify = () => {
   useEffect(() => {
     const html5QrCode = new Html5Qrcode("reader");
     scannerRef.current = html5QrCode;
+    
+    // FIX: Copy refs to variables inside the effect
+    const currentScanner = html5QrCode;
+    const currentHeartbeat = sounds.current.heartbeat;
 
     const startScanner = async () => {
       try {
-        await html5QrCode.start(
+        await currentScanner.start(
           { facingMode: "environment" }, 
           { 
             fps: 25, 
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-                // Dynamic big scan area: 80% of the smallest dimension
                 const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                 const size = Math.floor(minEdge * 0.8);
                 return { width: size, height: size };
@@ -92,20 +94,21 @@ const ScoreVerify = () => {
     startScanner();
 
     return () => {
-      if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().then(() => scannerRef.current.clear()).catch(() => {});
+      // Use the variables we captured at the start of the effect
+      if (currentScanner?.isScanning) {
+        currentScanner.stop()
+          .then(() => currentScanner.clear())
+          .catch((e) => console.warn("Cleanup error", e));
       }
-      sounds.current.heartbeat.stop();
+      currentHeartbeat.stop();
     };
   }, [handleScan]);
 
   return (
     <div className={s.mainWrapper}>
       <div className={s.scannerContainer}>
-        {/* Permanent Camera Node to prevent removeChild error */}
         <div id="reader" className={s.reader}></div>
         
-        {/* Dynamic Overlays */}
         {status !== 'ready' && (
           <div className={`${s.fullOverlay} ${s[status]}`}>
             {status === 'verifying' && (
@@ -136,7 +139,6 @@ const ScoreVerify = () => {
           </div>
         )}
 
-        {/* Framing Guides for the user */}
         {status === 'ready' && (
             <div className={s.uiGuides}>
                 <div className={s.targetBox}></div>
