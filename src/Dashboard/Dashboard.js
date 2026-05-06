@@ -3,7 +3,11 @@ import { useOutletContext, useNavigate, useLocation, Outlet } from 'react-router
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Icons from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 import s from './Dashboard.module.css';
+
+const MySwal = withReactContent(Swal);
 
 const Dashboard = () => {
   const { session } = useOutletContext();
@@ -25,6 +29,57 @@ const Dashboard = () => {
   }, [session]);
 
   const isActive = (path) => location.pathname === path;
+
+  // New Styled Logout Logic
+  const handleLogout = async () => {
+    const result = await MySwal.fire({
+      title: 'Logout?',
+      text: "Are you sure you want to end your session?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, logout',
+      background: '#4c0a23',
+      color: '#fff',
+      customClass: {
+        popup: s.swalPopup
+      }
+    });
+
+    if (result.isConfirmed) {
+      MySwal.fire({
+        title: 'Logging out...',
+        allowOutsideClick: false,
+        background: '#121212',
+        color: '#fff',
+        didOpen: () => {
+          MySwal.showLoading();
+        }
+      });
+
+      try {
+        await supabase.auth.signOut();
+        await MySwal.fire({
+          icon: 'success',
+          title: 'Logged Out',
+          text: 'See you next time!',
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#121212',
+          color: '#fff'
+        });
+      } catch (error) {
+        MySwal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to logout properly.',
+          background: '#121212',
+          color: '#fff'
+        });
+      }
+    }
+  };
 
   const getViewTitle = () => {
     const path = location.pathname;
@@ -86,7 +141,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* FIELD TOOLS: SCORER, SUPER & MASTER ADMIN */}
+            {/* FIELD TOOLS */}
             {(userRole === 'master_admin' || userRole === 'super_admin' || userRole === 'scorer') && (
               <>
                 <p className={s.sectionLabel}>FIELD TOOLS</p>
@@ -97,7 +152,7 @@ const Dashboard = () => {
               </>
             )}
 
-            {/* MANAGEMENT: SUPER & MASTER ADMIN */}
+            {/* MANAGEMENT */}
             {(userRole === 'master_admin' || userRole === 'super_admin') && (
               <>
                 <p className={s.sectionLabel}>MANAGEMENT</p>
@@ -112,7 +167,7 @@ const Dashboard = () => {
               </>
             )}
 
-            {/* SYSTEM: MASTER ADMIN ONLY */}
+            {/* SYSTEM */}
             {userRole === 'master_admin' && (
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
@@ -141,7 +196,7 @@ const Dashboard = () => {
               <span className={s.roleBadge}>{userRole.replace('_', ' ')}</span>
             </div>
           </div>
-          <button className={s.logoutBtn} onClick={() => supabase.auth.signOut()}>
+          <button className={s.logoutBtn} onClick={handleLogout}>
             <FontAwesomeIcon icon={Icons.faSignOutAlt} /> Logout
           </button>
         </div>
@@ -167,4 +222,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Dashboard; 
