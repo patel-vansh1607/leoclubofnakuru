@@ -1,0 +1,121 @@
+.footer {
+  background: #1a030d; /* Maroon base */
+  border-top: 1px solid rgba(241, 196, 15, 0.2);
+  padding: 60px 5% 30px;
+  margin-top: 100px;
+  color: #fff;
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.footerSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.alignRight {
+  align-items: flex-end;
+}
+
+/* Logo Styling */
+.footerLogo h3 {
+  font-family: 'Sakana', sans-serif;
+  color: #f1c40f; /* Gold */
+  font-size: 1.8rem;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.footerLogo h3 span { color: #FF3366; }
+.footerLogo p { font-size: 0.85rem; opacity: 0.6; margin: 5px 0 0; }
+
+/* Contact Section */
+.sectionLabel {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: #f1c40f;
+  margin-bottom: 5px;
+  font-weight: 800;
+}
+
+.socialLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.socialIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s ease;
+  opacity: 0.8;
+}
+
+.socialIcon:hover {
+  opacity: 1;
+  color: #f1c40f;
+  transform: translateX(5px);
+}
+
+/* Scroll Top Button */
+.scrollTop {
+  background: rgba(241, 196, 15, 0.1);
+  border: 1px solid #f1c40f;
+  color: #f1c40f;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px; /* Sleeker than a circle */
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scrollTop:hover {
+  background: #f1c40f;
+  color: #1a030d;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+}
+
+/* Bottom Bar */
+.footerBottom {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding-top: 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.4;
+}
+
+/* Mobile Alignment */
+@media (max-width: 768px) {
+  .footerContent {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 40px;
+  }
+
+  .alignRight {
+    align-items: center;
+  }
+
+  .socialIcon {
+    justify-content: center;
+  }
+}

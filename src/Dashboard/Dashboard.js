@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState('scorer');
   const [tournamentDropdown, setTournamentDropdown] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0); //
   
   const leoLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572486/7932664-03_scur6z.png";
 
@@ -25,12 +26,21 @@ const Dashboard = () => {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
       if (profile) setUserRole(profile.role);
     };
+
+    const fetchMessageCount = async () => {
+      const { count, error } = await supabase
+        .from('contact_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'unread');
+      if (!error) setUnreadMessages(count || 0);
+    };
+
     fetchUserLevel();
+    fetchMessageCount(); //
   }, [session]);
 
   const isActive = (path) => location.pathname === path;
 
-  // New Styled Logout Logic
   const handleLogout = async () => {
     const result = await MySwal.fire({
       title: 'Logout?',
@@ -42,9 +52,7 @@ const Dashboard = () => {
       confirmButtonText: 'Yes, logout',
       background: '#4c0a23',
       color: '#fff',
-      customClass: {
-        popup: s.swalPopup
-      }
+      customClass: { popup: s.swalPopup }
     });
 
     if (result.isConfirmed) {
@@ -53,9 +61,7 @@ const Dashboard = () => {
         allowOutsideClick: false,
         background: '#121212',
         color: '#fff',
-        didOpen: () => {
-          MySwal.showLoading();
-        }
+        didOpen: () => { MySwal.showLoading(); }
       });
 
       try {
@@ -69,6 +75,7 @@ const Dashboard = () => {
           background: '#121212',
           color: '#fff'
         });
+        navigate('/');
       } catch (error) {
         MySwal.fire({
           icon: 'error',
@@ -92,6 +99,7 @@ const Dashboard = () => {
     if (path.includes('draft-teams')) return 'Draft Teams';
     if (path.includes('master-oversight')) return 'Master Oversight';
     if (path.includes('verify-player')) return 'Field Verification';
+    if (path.includes('messages')) return 'Contact Inquiries'; //
     return 'Overview';
   };
 
@@ -118,6 +126,13 @@ const Dashboard = () => {
             <button className={isActive('/dashboard') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard'); setSidebarOpen(false); }}>
               <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faColumns} /></div>
               <span>Overview</span>
+            </button>
+
+            {/* MESSAGES SECTION - */}
+            <button className={isActive('/dashboard/messages') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/messages'); setSidebarOpen(false); }}>
+              <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faEnvelopeOpenText} /></div>
+              <span>Messages</span>
+              {unreadMessages > 0 && <span className={s.msgBadge}>{unreadMessages}</span>}
             </button>
             
             {/* TOURNAMENT SECTION */}
@@ -167,7 +182,7 @@ const Dashboard = () => {
               </>
             )}
 
-            {/* SYSTEM */}
+            {/* SYSTEM - Only Vansh as Master Admin can grant access */}
             {userRole === 'master_admin' && (
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
@@ -222,4 +237,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

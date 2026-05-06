@@ -1,0 +1,22 @@
+.container { padding: 20px; color: white; }
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(241, 196, 15, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+.unread { border-left: 4px solid #f1c40f; background: rgba(241, 196, 15, 0.05); }
+.cardHeader { display: flex; justify-content: space-between; align-items: center; }
+.cardHeader h4 span { font-weight: normal; font-size: 0.8rem; opacity: 0.6; }
+.subject { color: #f1c40f; font-weight: bold; margin: 10px 0; }
+.readBtn {
+  background: transparent;
+  border: 1px solid #f1c40f;
+  color: #f1c40f;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.readBtn:hover { background: #f1c40f; color: #000; }

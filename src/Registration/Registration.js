@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import styles from './Registration.module.css';
 import Navbar from '../Navbar/Navbar';
+import Footer from '../Footer/Footer';
 
 const Registration = () => {
   const [loading, setLoading] = useState(false);
@@ -223,7 +224,9 @@ const Registration = () => {
   </div>
 )}
       </div>
+          <Footer />
     </div>
+
   );
 };
 

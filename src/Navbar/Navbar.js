@@ -33,7 +33,6 @@ const Navbar = () => {
           <button className={styles.closeBtn} onClick={closeMenu}>&times;</button>
           
           <a href={`${MAIN_URL}/`} className={styles.link} onClick={closeMenu}>HOME</a>
-          <a href={`${MAIN_URL}/about`} className={styles.link} onClick={closeMenu}>ABOUT</a>
           <a href={`${MAIN_URL}/contact`} className={styles.link} onClick={closeMenu}>CONTACT</a>
           
           {/* Admin link - access remains restricted to Vansh's authorization */}
