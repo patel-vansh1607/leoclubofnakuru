@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/registration",
+      "destination": "https://register.leofootball.online"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
