@@ -19,7 +19,7 @@ import About from './AboutUs/AboutUs';
 import Maintenance from './Maintenance/Maintenance'; // Import Maintenance Component
 
 // Toggle this to lock/unlock the site
-const IS_MAINTENANCE_MODE = false; 
+const IS_MAINTENANCE_MODE = true; 
 
 const PageTitleUpdater = () => {
   const location = useLocation();

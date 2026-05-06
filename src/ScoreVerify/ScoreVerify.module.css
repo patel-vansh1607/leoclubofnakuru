@@ -1,99 +1,111 @@
-.container {
+.mainWrapper {
   width: 100vw;
   height: 100vh;
-  background: #1a020d;
+  background: #000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
 }
 
-.readerWrapper {
+.scannerContainer {
   position: relative;
-  width: 300px;
-  height: 300px;
-  border-radius: 30px;
+  width: 100%;
+  max-width: 500px; /* Limits size on laptop so it stays centered */
+  aspect-ratio: 1/1; /* Keeps it perfectly square */
+  background: #000;
+  border-radius: 40px;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 100px rgba(0, 255, 136, 0.05);
 }
 
-#reader {
+.reader {
+  width: 100%;
+  height: 100%;
+}
+
+/* Force the video to be big and fill the area */
+.reader video {
   width: 100% !important;
   height: 100% !important;
-}
-
-#reader video {
   object-fit: cover !important;
 }
 
-/* Custom Corners for that "Tech" look */
-.cornerTL, .cornerTR, .cornerBL, .cornerBR {
+/* The Success/Error/Verifying Screens */
+.fullOverlay {
   position: absolute;
-  width: 30px;
-  height: 30px;
-  border: 4px solid #FF3366;
-  z-index: 10;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(15px);
+  animation: fadeIn 0.3s ease;
 }
 
-.cornerTL { top: 15px; left: 15px; border-right: 0; border-bottom: 0; }
-.cornerTR { top: 15px; right: 15px; border-left: 0; border-bottom: 0; }
-.cornerBL { bottom: 15px; left: 15px; border-right: 0; border-top: 0; }
-.cornerBR { bottom: 15px; right: 15px; border-left: 0; border-top: 0; }
+.verifying { background: rgba(0, 0, 0, 0.8); }
+.success { background: rgba(0, 255, 136, 0.95); color: #000; }
+.error { background: rgba(220, 38, 38, 0.95); }
 
-.scanLine {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 4px;
-  background: #FF3366;
-  box-shadow: 0 0 20px #FF3366;
-  z-index: 20;
-  animation: scanAnim 1.5s infinite linear;
-}
-
-@keyframes scanAnim {
-  0% { top: 20%; }
-  100% { top: 80%; }
-}
-
-.resultCard {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 30px;
-  border-radius: 25px;
+.content {
   text-align: center;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 85%;
-  max-width: 400px;
+  padding: 20px;
 }
 
-.playerName {
-  font-family: 'Sakana', sans-serif;
-  color: #fff;
-  font-size: 2rem;
-  margin: 10px 0;
+.loader { font-size: 4rem; color: #00ff88; margin-bottom: 20px; }
+.popIcon { font-size: 6rem; margin-bottom: 20px; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+.playerName { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; }
+.playerSub { font-size: 1.2rem; font-weight: 600; opacity: 0.8; margin-top: 5px; }
+
+/* Viewfinder Visuals */
+.uiGuides {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.jerseyBox {
-  background: #FF3366;
-  color: #fff;
-  display: inline-block;
-  padding: 5px 15px;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 1.5rem;
-  margin: 15px 0;
+.targetBox {
+    width: 70%;
+    height: 70%;
+    border: 2px solid rgba(0, 255, 136, 0.4);
+    border-radius: 30px;
+    box-shadow: 0 0 0 5000px rgba(0,0,0,0.6);
 }
 
-.nextBtn {
-  background: #fff;
-  color: #1a020d;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 15px;
-  font-weight: 700;
-  width: 100%;
-  margin-top: 20px;
-  cursor: pointer;
+.guideText {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
 }
+
+.bottomBar {
+  padding: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #333;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { 
+    from { transform: scale(0.5); opacity: 0; } 
+    to { transform: scale(1); opacity: 1; } 
+}
+
+/* Hide Library Brandings */
+#reader__dashboard, #reader img { display: none !important; }
+#reader__scan_region { border: none !important; }   
