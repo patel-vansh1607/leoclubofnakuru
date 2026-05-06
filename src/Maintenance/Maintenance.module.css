@@ -1,0 +1,137 @@
+.pageWrapper {
+  /* This ensures it covers the entire existing website */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #2b0314; /* Your brand plum color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999999; /* Higher than any other element */
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.contentCenter {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.statusBadge {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: #ffd700;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  background: #ffd700;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffd700;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 1; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(0.9); opacity: 0; }
+}
+
+.mainBrand {
+  font-family: 'Sakana', sans-serif;
+  font-size: clamp(1.8rem, 8vw, 3rem);
+  margin: 0;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.goldText {
+  color: #FF3366; 
+  letter-spacing: 1px;
+  position: relative;
+  display: inline-block;
+  
+  /* 8-point shadow ring for maximum smoothness */
+  filter: 
+    drop-shadow(1px 0px 0px #ffffff)
+    drop-shadow(-1px 0px 0px #ffffff)
+    drop-shadow(0px 1px 0px #ffffff)
+    drop-shadow(0px -1px 0px #ffffff)
+    drop-shadow(0.7px 0.7px 0px #ffffff)
+    drop-shadow(-0.7px -0.7px 0px #ffffff)
+    drop-shadow(0.7px -0.7px 0px #ffffff)
+    drop-shadow(-0.7px 0.7px 0px #ffffff);
+
+  /* Fixes sub-pixel rendering jitters */
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+}
+.description {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 450px;
+  line-height: 1.5;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statLabel {
+  display: block;
+  font-size: 0.6rem;
+  color: #ffd700;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.statValue {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.footer {
+  margin-top: 2rem;
+  font-size: 0.7rem;
+  opacity: 0.4;
+}
+
+/* Responsiveness for small mobile screens */
+@media (max-width: 500px) {
+  .statsRow {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .contentCenter {
+    gap: 1rem;
+  }
+}
