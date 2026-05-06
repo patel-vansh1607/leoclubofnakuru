@@ -1,156 +1,133 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faCircleCheck, 
-  faSync, 
-  faExclamationTriangle, 
-  faQrcode 
-} from '@fortawesome/free-solid-svg-icons';
+import { faCircleCheck, faSync, faBolt } from '@fortawesome/free-solid-svg-icons';
 import s from './ScoreVerify.module.css';
 
 const ScoreVerify = () => {
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [status, setStatus] = useState("Initializing...");
   const scannerRef = useRef(null);
-  const isProcessing = useRef(false); // Ref to prevent race conditions during rapid scans
+  const isProcessing = useRef(false);
 
-  const playProChime = () => {
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    const playNote = (freq, start, duration) => {
-      const osc = context.createOscillator();
-      const gain = context.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, context.currentTime + start);
-      osc.connect(gain);
-      gain.connect(context.destination);
-      gain.gain.setValueAtTime(0, context.currentTime + start);
-      gain.gain.linearRampToValueAtTime(0.1, context.currentTime + start + 0.05);
-      gain.gain.linearRampToValueAtTime(0, context.currentTime + start + duration);
-      osc.start(context.currentTime + start);
-      osc.stop(context.currentTime + start + duration);
-    };
-    playNote(660, 0, 0.15); 
-    playNote(880, 0.1, 0.2); 
-  };
+  const handleScan = useCallback(async (decodedText) => {
+    // 1. LOG EVERYTHING IMMEDIATELY
+    console.log("🔍 RAW DATA DETECTED:", decodedText);
 
-  const verifyPlayer = useCallback(async (scannedId) => {
-    // If already processing or player shown, exit immediately for speed
-    if (isProcessing.current || player) return;
-    
-    isProcessing.current = true;
+    // 2. CHECK FORMAT (Case-insensitive check for reliability)
+    const upperText = decodedText.toUpperCase();
+    if (isProcessing.current || !upperText.includes('LEO-CUP-')) {
+      if (isProcessing.current) console.warn("⏳ Busy processing another scan...");
+      return;
+    }
+
+    console.log("🎯 VALID ID DETECTED. FETCHING...");
+    isProcessing.current = true; // LOCK
     setLoading(true);
-    setError(null);
-    
+    setStatus("VERIFYING ID...");
+
     try {
-      const { data, error: dbError } = await supabase
+      const { data, error } = await supabase
         .from('players')
-        .select('*, teams(team_name)')
-        .eq('player_id', scannedId)
+        .select('name, jersey_number, teams(team_name)')
+        .eq('player_id', upperText) // Using the exact ID from the QR
         .single();
 
-      if (dbError || !data) {
-        setError("INVALID PLAYER ID");
-        isProcessing.current = false; // Allow re-scan immediately
-        setTimeout(() => setError(null), 2000);
-      } else {
-        playProChime();
+      if (data) {
+        console.log("✅ MATCH FOUND:", data.name);
         setPlayer(data);
         if (scannerRef.current) {
-          scannerRef.current.clear().catch(err => console.error("Failed to clear", err));
+          await scannerRef.current.stop();
+          console.log("🛑 CAMERA STOPPED");
         }
+      } else {
+        console.error("❌ DB CHECK: ID not found in Players table.");
+        setStatus("ID NOT REGISTERED");
+        // Release lock after 2 seconds to allow re-scan
+        setTimeout(() => {
+          isProcessing.current = false;
+          setStatus("READY FOR SCAN");
+        }, 2000);
       }
     } catch (err) {
-      setError("SERVER ERROR");
+      console.error("🚨 CRITICAL DB ERROR:", err);
       isProcessing.current = false;
     } finally {
       setLoading(false);
     }
-  }, [player]);
+  }, []);
 
-  const startScanner = useCallback(() => {
-    isProcessing.current = false;
+  const startScanner = async () => {
+    console.log("📸 OPENING CAMERA...");
     setPlayer(null);
-    setError(null);
+    isProcessing.current = false;
+    setStatus("Waiting for Camera...");
 
-    // Small delay to ensure the DOM element #reader is ready
-    setTimeout(() => {
-      const config = {
-        fps: 60, // Cranked up for high-speed tracking
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-        // Prioritize the back camera and disable video selection UI for speed
-        rememberLastUsedCamera: true,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+    const html5QrCode = new Html5Qrcode("reader");
+    scannerRef.current = html5QrCode;
+
+    try {
+      // Configuration for instant detection
+      const config = { 
+        fps: 30, // High frame rate
+        // We removed qrbox so it scans the WHOLE screen, not just the center
+        aspectRatio: 1.0 
       };
 
-      const scanner = new Html5QrcodeScanner('reader', config, false);
-      scanner.render(verifyPlayer, (err) => {
-        // Silent fail on scan errors (common during movement) to keep it smooth
-      });
-      scannerRef.current = scanner;
-    }, 50);
-  }, [verifyPlayer]);
+      await html5QrCode.start(
+        { facingMode: "environment" }, 
+        config, 
+        handleScan,
+        (errorMessage) => {
+           // This fires every frame it DOESN'T find a QR. 
+           // Leave empty to avoid spamming the console.
+        }
+      );
+      
+      console.log("🟢 SCANNER ACTIVE - FULL SCREEN MODE");
+      setStatus("READY FOR SCAN");
+    } catch (err) {
+      console.error("🔴 CAMERA INIT ERROR:", err);
+      setStatus("ERROR: CHECK PERMISSIONS");
+    }
+  };
 
   useEffect(() => {
     startScanner();
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(err => console.error(err));
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch(e => console.log("Cleanup error", e));
       }
     };
-  }, [startScanner]);
+  }, []);
 
   return (
     <div className={s.container}>
-      {loading && (
-        <div className={s.loaderWrapper}>
-          <div className={s.spinner}></div>
-          <p className={s.loaderText}>FAST-TRACKING...</p>
-        </div>
-      )}
-
-      {!player && !loading && (
+      {!player ? (
         <div className={s.scanZone}>
-          <div className={s.viewfinder}>
-            <div id="reader"></div>
-            <div className={s.overlayLabel}>
-                <FontAwesomeIcon icon={faQrcode} /> READY FOR SCAN
+          <div className={s.readerWrapper}>
+            <div id="reader" className={s.fullReader}></div>
+            {/* Visual Scan Line */}
+            <div className={s.scannerOverlay}>
+               <div className={s.scanLine}></div>
             </div>
           </div>
-          {error && (
-            <div className={s.toastError}>
-              <FontAwesomeIcon icon={faExclamationTriangle} /> {error}
-            </div>
-          )}
+          
+          <div className={s.footer}>
+            <div className={s.statusTag}>STATUS: {status}</div>
+            <p className={s.hint}><FontAwesomeIcon icon={faBolt} /> POINT AT PLAYER ID</p>
+          </div>
         </div>
-      )}
-
-      {player && !loading && (
-        <div className={s.resultWrapper}>
-          <div className={s.successBadge}>
-            <FontAwesomeIcon icon={faCircleCheck} /> VERIFIED
-          </div>
-
-          <div className={s.bentoGrid}>
-            <div className={`${s.bentoBox} ${s.full}`}>
-              <span className={s.label}>PLAYER</span>
-              <h2 className={s.value}>{player.name}</h2>
-            </div>
-            <div className={s.bentoBox}>
-              <span className={s.label}>TEAM</span>
-              <p className={s.value}>{player.teams?.team_name || 'UNASSIGNED'}</p>
-            </div>
-            <div className={s.bentoBox}>
-              <span className={s.label}>NO.</span>
-              <p className={s.valueHighlight}>#{player.jersey_number || '00'}</p>
-            </div>
-          </div>
-
-          <button className={s.actionBtn} onClick={startScanner}>
-            <FontAwesomeIcon icon={faSync} /> NEXT SCAN
+      ) : (
+        <div className={s.resultCard}>
+          <div className={s.verifiedIcon}><FontAwesomeIcon icon={faCircleCheck} /></div>
+          <h1 className={s.pName}>{player.name}</h1>
+          <h3 className={s.tName}>{player.teams?.team_name || "NO TEAM"}</h3>
+          <div className={s.jerseyBadge}>#{player.jersey_number}</div>
+          <button className={s.resetBtn} onClick={startScanner}>
+            <FontAwesomeIcon icon={faSync} /> NEXT PLAYER
           </button>
         </div>
       )}

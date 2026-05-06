@@ -8,16 +8,16 @@ import s from './AddTeam.module.css';
 const AddTeam = () => {
   const [loading, setLoading] = useState(false);
   const [teamName, setTeamName] = useState('');
-  const [pool, setPool] = useState('BOYS'); // Default Pool
+  const [pool, setPool] = useState('BOYS');
   const [players, setPlayers] = useState(Array(12).fill({ name: '', jersey: '' }));
   const [successData, setSuccessData] = useState(null);
 
-  const generateUniqueID = (type, existingSet) => {
+  const generateUniqueID = (existingSet) => {
     let id;
     let isUnique = false;
     while (!isUnique) {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
-      id = type === 'TEAM' ? `LEO-TEAM-${randomNum}` : `LEO-PLYR-${randomNum}`;
+      id = `LEO-CUP-${randomNum}`; // Standardized ID for the scanner
       if (!existingSet.has(id)) isUnique = true;
     }
     return id;
@@ -28,15 +28,10 @@ const AddTeam = () => {
     setLoading(true);
     setSuccessData(null);
 
-    console.log("🚀 INITIATING DEPLOYMENT...");
-
     try {
       const usedIDs = new Set();
-      const customTeamId = generateUniqueID('TEAM', usedIDs);
-      usedIDs.add(customTeamId);
+      const customTeamId = `LEO-TEAM-${Math.floor(1000 + Math.random() * 9000)}`;
 
-      // --- STAGE 1: TEAM INSERTION ---
-      console.log("📡 SYNCING TEAM DATA...", { teamName, pool });
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .insert([{ 
@@ -44,39 +39,33 @@ const AddTeam = () => {
           team_name: teamName.toUpperCase(), 
           pool: pool,
           is_approved: true,
-          captain_whatsapp: "0000000000" // Placeholder for DB constraint
+          captain_whatsapp: "0000000000" 
         }])
         .select().single();
 
       if (teamError) throw teamError;
 
-      // --- STAGE 2: PLAYER INSERTION ---
       const playersToInsert = players.map((p) => {
-        const customPlayerId = generateUniqueID('PLAYER', usedIDs);
+        const customPlayerId = generateUniqueID(usedIDs);
         usedIDs.add(customPlayerId);
         return {
-          player_id: customPlayerId,
+          player_id: customPlayerId, // Primary reference for scanning
           team_id: teamData.id,
           name: p.name.toUpperCase(),
           jersey_number: p.jersey,
-          qr_string: `https://leofootball.online/verify/${customPlayerId}`
+          qr_string: customPlayerId // Store ONLY the ID string
         };
       });
 
-      console.log("📡 SYNCING PLAYER ROSTER...");
       const { error: pError } = await supabase.from('players').insert(playersToInsert);
       if (pError) throw pError;
 
-      console.log("✅ DEPLOYMENT COMPLETE");
-      setSuccessData({ teamId: customTeamId, teamName: teamName.toUpperCase() });
-      
-      // Reset Form
+      setSuccessData({ teamId: customTeamId, teamName: teamName.toUpperCase(), playerIds: Array.from(usedIDs) });
       setTeamName('');
       setPlayers(Array(12).fill({ name: '', jersey: '' }));
       
     } catch (err) {
-      console.error("🚨 CRITICAL ERROR:", err);
-      alert(`DATABASE ERROR: ${err.message || "Check Console"}`);
+      alert(`DATABASE ERROR: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -91,110 +80,46 @@ const AddTeam = () => {
   return (
     <div className={s.container}>
       <header className={s.header}>
-        <div className={s.badge}>
-          <FontAwesomeIcon icon={faShieldHalved} /> SYSTEM_ADMIN_MODULE
-        </div>
-        <h1 className={s.title}>CREATE_TEAM_PROFILE</h1>
-        <p className={s.subtitle}>Syncing registration data for LEO CUP 2026.</p>
+        <div className={s.badge}><FontAwesomeIcon icon={faShieldHalved} /> SYSTEM_ADMIN</div>
+        <h1 className={s.title}>CREATE_TEAM</h1>
       </header>
 
       <form className={s.bentoGrid} onSubmit={handleAddTeam}>
-        {/* Core ID Card */}
         <div className={`${s.card} ${s.spanFull}`}>
-          <div className={s.cardHeader}>
-            <FontAwesomeIcon icon={faUsers} className={s.accentIcon} />
-            <h3>CORE_IDENTIFICATION</h3>
-          </div>
-          
           <div className={s.inputRow}>
-            <div className={s.nameInputWrapper}>
-              <label className={s.smallLabel}>OFFICIAL TEAM NAME</label>
-              <input 
-                className={s.mainInput}
-                value={teamName} 
-                onChange={e => setTeamName(e.target.value)} 
-                placeholder="E.G. NAKURU WARRIORS" 
-                required 
-              />
-            </div>
-            
-            <div className={s.poolWrapper}>
-              <label className={s.smallLabel}>TOURNAMENT_POOL</label>
-              <div className={s.poolToggle}>
-                <button 
-                  type="button" 
-                  className={pool === 'BOYS' ? s.activePool : ''} 
-                  onClick={() => setPool('BOYS')}
-                >BOYS</button>
-                <button 
-                  type="button" 
-                  className={pool === 'GIRLS' ? s.activePool : ''} 
-                  onClick={() => setPool('GIRLS')}
-                >GIRLS</button>
-              </div>
+            <input className={s.mainInput} value={teamName} onChange={e => setTeamName(e.target.value)} placeholder="TEAM NAME" required />
+            <div className={s.poolToggle}>
+              <button type="button" className={pool === 'BOYS' ? s.active : ''} onClick={() => setPool('BOYS')}>BOYS</button>
+              <button type="button" className={pool === 'GIRLS' ? s.active : ''} onClick={() => setPool('GIRLS')}>GIRLS</button>
             </div>
           </div>
         </div>
 
-        {/* Players Grid (2 Columns) */}
         <div className={s.playersGrid}>
           {players.map((p, i) => (
             <div key={i} className={s.playerCard}>
-              <div className={s.playerHeader}>
-                <span className={s.index}>#{String(i + 1).padStart(2, '0')}</span>
-                <span className={s.tag}>{i === 0 ? 'CAPTAIN' : 'ROSTER'}</span>
-              </div>
-              <div className={s.playerInputs}>
-                <div className={s.nameField}>
-                  <label className={s.smallLabel}>FULL NAME</label>
-                  <input 
-                    className={s.minimalInput}
-                    value={p.name} 
-                    onChange={e => updatePlayer(i, 'name', e.target.value)} 
-                    placeholder="PLAYER NAME" 
-                    required 
-                  />
-                </div>
-                <div className={s.jerseyField}>
-                  <label className={s.smallLabel}>JRSY</label>
-                  <input 
-                    className={s.minimalInput}
-                    value={p.jersey} 
-                    onChange={e => updatePlayer(i, 'jersey', e.target.value)} 
-                    placeholder="00" 
-                    maxLength="3"
-                    required 
-                  />
-                </div>
-              </div>
+              <input className={s.minimalInput} value={p.name} onChange={e => updatePlayer(i, 'name', e.target.value)} placeholder="PLAYER NAME" required />
+              <input className={s.minimalInput} value={p.jersey} onChange={e => updatePlayer(i, 'jersey', e.target.value)} placeholder="JRSY" required />
             </div>
           ))}
         </div>
 
-        {/* Action Panel */}
-        <div className={`${s.card} ${s.spanFull} ${s.actionCard}`}>
-          <div className={s.disclaimer}>
-            <p>Verification IDs are generated upon database commit.</p>
-            <span>MASTER_ADMIN: AUTHORIZED ACCESS ONLY.</span>
-          </div>
-          <button type="submit" className={s.submitBtn} disabled={loading}>
-            <FontAwesomeIcon icon={faCloudUploadAlt} /> {loading ? 'SYNCING...' : 'DEPLOY TEAM PROFILE'}
-          </button>
-        </div>
+        <button type="submit" className={s.submitBtn} disabled={loading}>
+          {loading ? 'SYNCING...' : 'DEPLOY TEAM'}
+        </button>
       </form>
 
-      {/* Success Modal */}
       {successData && (
         <div className={s.successOverlay}>
           <div className={s.successModal}>
             <FontAwesomeIcon icon={faCheckCircle} className={s.successIcon} />
-            <h2>DEPLOYMENT SUCCESSFUL</h2>
-            <p className={s.modalTeamName}>{successData.teamName} ({pool})</p>
+            <h2>TEAM DEPLOYED</h2>
             <div className={s.qrBox}>
-              <QRCodeCanvas value={`https://leofootball.online/team/${successData.teamId}`} size={160} />
+              {/* This stores the RAW ID for instant scanning */}
+              <QRCodeCanvas value={successData.playerIds[0]} size={200} level="H" includeMargin={true} />
             </div>
-            <code className={s.teamIdCode}>{successData.teamId}</code>
-            <button onClick={() => setSuccessData(null)} className={s.closeBtn}>CONTINUE</button>
+            <p>Example Captain ID: {successData.playerIds[0]}</p>
+            <button onClick={() => setSuccessData(null)}>CONTINUE</button>
           </div>
         </div>
       )}
