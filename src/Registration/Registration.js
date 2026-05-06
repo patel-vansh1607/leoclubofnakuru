@@ -6,6 +6,8 @@ import Navbar from '../Navbar/Navbar';
 const Registration = () => {
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [submittedId, setSubmittedId] = useState('');
   const [acceptedRules, setAcceptedRules] = useState(false);
   const [formData, setFormData] = useState({ 
     teamName: '', 
@@ -15,6 +17,7 @@ const Registration = () => {
   const formRef = useRef(null);
 
   const playerCount = 12;
+  const SUPPORT_CONTACT = "+254 712 345 678";
 
   const generateID = (type, index = null) => {
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -68,8 +71,9 @@ const Registration = () => {
         }]);
 
       if (error) throw error;
-      alert(`APPLICATION FILED: ${teamCustomId}. Awaiting Master Admin approval.`);
-      window.location.reload();
+      setSubmittedId(teamCustomId);
+      setShowPreview(false);
+      setShowSuccess(true);
       
     } catch (err) {
       console.error("Submission error:", err);
@@ -103,29 +107,30 @@ const Registration = () => {
             {Array.from({ length: playerCount }).map((_, i) => (
               <div key={i} className={styles.playerCard}>
                 <span className={styles.idTag}>
-                  {i === 0 ? "UNIT_01 // CAPTAIN" : `UNIT_${String(i + 1).padStart(2, '0')} // PLAYER`}
+                  {i === 0 ? "CAPTAIN" : `PLAYER ${String(i + 1).padStart(2, '0')}`}
                 </span>
                 
-                <div className={styles.inputGroup}>
-                  <input 
-                    name={`jersey-${i}`} 
-                    type="number" 
-                    placeholder="00" 
-                    max="99"
-                    className={styles.jerseyInput} 
-                    required 
-                  />
-                  <input 
-                    name={`player-${i}`} 
-                    placeholder="FULL NAME" 
-                    className={styles.nameInput} 
-                    required 
-                  />
-                </div>
-
+<div className={styles.inputGroup}>
+  <input 
+    name={`jersey-${i}`} 
+    type="number" 
+    placeholder="00" 
+    min="0" 
+    max="99" 
+    className={styles.jerseyInput} 
+    onKeyDown={(e) => ["e", "E", "-", "+"].includes(e.key) && e.preventDefault()}
+    required 
+  />
+  <input 
+    name={`player-${i}`} 
+    placeholder="FULL NAME" 
+    className={styles.nameInput} 
+    required 
+  />
+</div>
                 {i === 0 && (
                   <div className={styles.whatsappBox}>
-                    <label>SECURE_COMMUNICATION_LINE (WHATSAPP)</label>
+                    <label>CAPTAIN'S WHATSAPP NUMBER</label>
                     <input name="captainWhatsapp" placeholder="+254..." className={styles.contactInput} required />
                   </div>
                 )}
@@ -134,19 +139,39 @@ const Registration = () => {
           </div>
 
           <div className={styles.rulesSection}>
-            <label className={styles.label}>TOURNAMENT_ADVISORY</label>
-            <div className={styles.rulesDesktopGrid}>
-              <div className={styles.ruleItem}><strong>1. ADMIN REVIEW:</strong> <p>Data is inactive until Master Admin approval.</p></div>
-              <div className={styles.ruleItem}><strong>2. PURGE POLICY:</strong> <p>Rejected applications result in permanent data deletion.</p></div>
-              <div className={styles.ruleItem}><strong>3. PAYMENT:</strong> <p>Manual verification required for "PAID" status.</p></div>
-              <div className={styles.ruleItem}><strong>4. ACCESS:</strong> <p>Only Vansh can grant super admin or admin access.</p></div>
-            </div>
-            <label className={styles.checkboxLabel}>
-              <input type="checkbox" checked={acceptedRules} onChange={(e) => setAcceptedRules(e.target.checked)} required />
-              <span>I AGREE TO THE DATA RETENTION AND APPROVAL POLICIES.</span>
-            </label>
-          </div>
-
+  <label className={styles.label}>TOURNAMENT ADVISORY</label>
+  <div className={styles.rulesDesktopGrid}>
+    <div className={styles.ruleItem}>
+      <strong>1. ELIGIBILITY AUDIT</strong> 
+      <p>Submissions remain pending until a mandatory age and identity audit is completed.</p>
+    </div>
+    <div className={styles.ruleItem}>
+      <strong>2. SLOT CONFIRMATION</strong> 
+      <p>Participation is guaranteed only after payment and roster clearance.</p>
+    </div>
+    <div className={styles.ruleItem}>
+      <strong>3. ROSTER FINALIZATION</strong> 
+      <p>Details cannot be modified once the audit begins.</p>
+    </div>
+    <div className={styles.ruleItem}>
+      <strong>4. CONDUCT CODE</strong> 
+      <p>Teams must adhere to professional standards or face disqualification.</p>
+    </div>
+    <div className={styles.ruleItem}>
+      <strong>5. VERIFICATION & PAYMENTS</strong>
+      <p>
+        You will be contacted to submit birth certificates and payments. 
+        <strong className={styles.warning}> DO NOT</strong> make payments to any number until contacted directly by the 
+        <strong className={styles.warning}> LEO CLUB OF NAKURU</strong>. Reach out to 
+        nakuruleoclub@gmail.com for validation.
+      </p>
+    </div>
+  </div>
+  <label className={styles.checkboxLabel}>
+    <input type="checkbox" checked={acceptedRules} onChange={(e) => setAcceptedRules(e.target.checked)} required />
+    <span>I AGREE TO THE DATA RETENTION AND APPROVAL POLICIES.</span>
+  </label>
+</div>
           <button type="submit" className={styles.actionBtn} disabled={!acceptedRules}>
             PROCEED TO REVIEW
           </button>
@@ -168,14 +193,35 @@ const Registration = () => {
                 </div>
               </div>
               <div className={styles.btnRow}>
-                <button onClick={() => { setShowPreview(false); document.body.style.overflow = 'auto'; }} className={styles.cancelBtn}>EDIT</button>
                 <button onClick={finalizeSubmission} className={styles.confirmBtn} disabled={loading}>
                   {loading ? "INITIALIZING..." : "SUBMIT APPLICATION"}
                 </button>
+                <button onClick={() => { setShowPreview(false); document.body.style.overflow = 'auto'; }} className={styles.cancelBtn}>EDIT SQUAD</button>
               </div>
             </div>
           </div>
         )}
+
+       {showSuccess && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.successBox}>
+      <div className={styles.successIcon}>✓</div>
+      <h2 className={styles.sakanaTitle}>FILED_SUCCESSFULLY</h2>
+      <p className={styles.idText}>TEAM_ID: <span>{submittedId}</span></p>
+      <p className={styles.descText}>Your application is pending approval. Please save your Team ID.</p>
+      
+      <div className={styles.supportBox}>
+        <p>For further queries, contact support:</p>
+        <a href={`tel:${SUPPORT_CONTACT}`} className={styles.supportLink}>{SUPPORT_CONTACT}</a>
+      </div>
+
+      {/* Button is now centered via the .successBox flex properties */}
+      <button onClick={() => window.location.reload()} className={styles.confirmBtnCentered}>
+        CLOSE
+      </button>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
