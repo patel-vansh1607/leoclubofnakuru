@@ -18,7 +18,7 @@ const Registration = () => {
   const formRef = useRef(null);
 
   const playerCount = 12;
-  const SUPPORT_CONTACT = "+254 712 345 678";
+  const SUPPORT_CONTACT = "nakuruleoclub@gmail.com";
 
   const generateID = (type, index = null) => {
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -207,7 +207,7 @@ const Registration = () => {
   <div className={styles.modalOverlay}>
     <div className={styles.successBox}>
       <div className={styles.successIcon}>✓</div>
-      <h2 className={styles.sakanaTitle}>FILED_SUCCESSFULLY</h2>
+      <h2 className={styles.sakanaTitle}>SUBMITTED SUCCESSFULLY</h2>
       <p className={styles.idText}>TEAM_ID: <span>{submittedId}</span></p>
       <p className={styles.descText}>Your application is pending approval. Please save your Team ID.</p>
       
