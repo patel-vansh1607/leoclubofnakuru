@@ -1,123 +1,170 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
-
-.roleContainer {
-  font-family: 'Lato', sans-serif;
-  color: #ffffff;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
+.roleContainer { padding: 30px; color: white; animation: fadeIn 0.4s ease; }
 .header { margin-bottom: 30px; }
-.title { font-weight: 900; font-size: 1.8rem; letter-spacing: -0.5px; }
-.subtitle { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; }
+.titleRow { display: flex; align-items: center; gap: 15px; }
+.title { font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; font-size: 2rem; }
+.subtitle { color: rgba(255,255,255,0.3); font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; margin-top: 5px; }
 
-/* ADD SECTION */
-.addSection {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 30px;
+.masterIcon { color: #f1c40f; margin-left: 10px; font-size: 0.8rem; }
+
+/* TABLE */
+.tableWrapper { 
+  background: #000; 
+  border: 1px solid #1a1a1a; 
+  border-radius: 20px; 
+  overflow: hidden; 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
 }
 
-.inputGroup {
+.userTable { width: 100%; border-collapse: collapse; }
+.userTable th { background: #080808; padding: 20px; text-align: left; font-size: 0.65rem; color: #444; text-transform: uppercase; letter-spacing: 2px; }
+.userRow { border-bottom: 1px solid #0f0f0f; transition: 0.2s; }
+.userRow:hover { background: rgba(255,255,255,0.01); }
+.userTable td { padding: 18px 20px; vertical-align: middle; }
+
+.emailCell { font-weight: 800; color: #f1c40f; font-size: 1rem; }
+
+/* BADGES */
+.badge { padding: 5px 12px; border-radius: 6px; font-size: 0.65rem; font-weight: 900; }
+.master_admin { background: rgba(241,196,15,0.1); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+.superadmin { background: rgba(155, 89, 182, 0.1); color: #9b59b2; }
+.admin { background: rgba(52, 152, 219, 0.1); color: #3498db; }
+.scorer { background: #111; color: #555; }
+
+.tableSelect {
+  background: #080808;
+  border: 1px solid #222;
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnRevoke {
+  background: rgba(231, 76, 60, 0.05);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.1);
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btnRevoke:hover:not(:disabled) {
+  background: #e74c3c;
+  color: white;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+}
+
+.btnRevoke:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tableSelect:disabled {
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.centerText { text-align: center; }
+.loader { padding: 100px; text-align: center; color: #f1c40f; font-weight: 900; letter-spacing: 2px; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* ... Keep your existing Table and Badge styles ... */
+
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
-.input {
-  flex: 2;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 16px;
+.modalContent {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: 24px;
+  position: relative;
+  text-align: center;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: none; border: none;
+  color: #444; cursor: pointer;
+}
+
+.modalHeader h3 {
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 15px 0;
+  color: #fff;
+}
+
+.warnIcon { color: #f1c40f; font-size: 2rem; }
+
+.progressBar {
+  height: 4px;
+  background: #111;
   border-radius: 10px;
-  color: white;
-  outline: none;
-}
-
-.input:focus { border-color: #f1c40f; }
-
-.roleSelect, .tableSelect {
-  flex: 1;
-  background: #2a0514; /* Deep Maroon */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.btnAdd {
-  background: #f1c40f;
-  color: #4f0523;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.btnAdd:hover { transform: scale(1.02); background: #ffffff; }
-
-/* TABLE STYLING */
-.tableWrapper {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
+  margin-bottom: 30px;
   overflow: hidden;
 }
 
-.userTable {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+.progressFill {
+  height: 100%;
+  background: #f1c40f;
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.userTable th {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 15px 20px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.userRow { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-.userRow:last-child { border: none; }
-
-.userTable td { padding: 18px 20px; vertical-align: middle; }
-.emailCell { font-weight: 600; color: #f1c40f; }
-
-/* BADGES */
-.badge {
-  padding: 4px 12px;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.scorer { background: rgba(255, 255, 255, 0.1); color: #fff; }
-.admin { background: rgba(52, 152, 219, 0.2); color: #3498db; }
-.superadmin { background: rgba(155, 89, 182, 0.2); color: #9b59b2; }
-.master_admin { background: #f1c40f; color: #4f0523; }
-
-.tableSelect:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  font-weight: 700;
+.targetBox {
+  background: #111;
+  padding: 12px;
+  border-radius: 10px;
   color: #f1c40f;
+  font-weight: 700;
+  margin: 20px 0;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.nextBtn, .finalBtn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 10px;
 }
+
+.nextBtn { background: #222; color: #fff; }
+.nextBtn:hover { background: #333; }
+
+.finalBtn { background: #e74c3c; color: #fff; }
+.finalBtn:disabled { opacity: 0.1; cursor: not-allowed; }
+
+.modalInput {
+  width: 100%;
+  background: #000;
+  border: 1px solid #333;
+  padding: 15px;
+  border-radius: 10px;
+  color: #fff;
+  text-align: center;
+  font-weight: 900;
+  margin-bottom: 15px;
+  letter-spacing: 3px;
+}
+
+.dangerText { color: #e74c3c; font-weight: 600; line-height: 1.5; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
