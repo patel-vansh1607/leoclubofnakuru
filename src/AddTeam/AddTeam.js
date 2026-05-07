@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { QRCodeCanvas } from 'qrcode.react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldHalved, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faShieldHalved, faCheckCircle, faBolt } from '@fortawesome/free-solid-svg-icons';
 import s from './AddTeam.module.css';
 
 const AddTeam = () => {
@@ -65,7 +65,7 @@ const AddTeam = () => {
       setPlayers(Array(12).fill({ name: '', jersey: '' }));
       
     } catch (err) {
-      alert(`DATABASE ERROR: ${err.message}`);
+      alert(`SYSTEM ERROR: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -79,18 +79,30 @@ const AddTeam = () => {
 
   return (
     <div className={s.container}>
+      {/* Import Lato font directly */}
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+      </style>
+
       <header className={s.header}>
-        <div className={s.badge}><FontAwesomeIcon icon={faShieldHalved} /> SYSTEM_ADMIN</div>
-        <h1 className={s.title}>CREATE_TEAM</h1>
+        <h1 className={s.title}>ADD NEW <span className={s.gold}>TEAM</span></h1>
+        <p className={s.subtitle}>Add a new team to the competition.</p>
       </header>
 
       <form className={s.bentoGrid} onSubmit={handleAddTeam}>
         <div className={`${s.card} ${s.spanFull}`}>
           <div className={s.inputRow}>
-            <input className={s.mainInput} value={teamName} onChange={e => setTeamName(e.target.value)} placeholder="TEAM NAME" required />
-            <div className={s.poolToggle}>
-              <button type="button" className={pool === 'BOYS' ? s.active : ''} onClick={() => setPool('BOYS')}>BOYS</button>
-              <button type="button" className={pool === 'GIRLS' ? s.active : ''} onClick={() => setPool('GIRLS')}>GIRLS</button>
+            <div className={s.nameInputWrapper}>
+              <label className={s.smallLabel}> TEAM NAME</label>
+              <input className={s.mainInput} value={teamName} onChange={e => setTeamName(e.target.value)} placeholder="ENTER NAME..." required />
+            </div>
+            <div className={s.poolWrapper}>
+              <label className={s.smallLabel}>COMPETITION POOL</label>
+              <div className={s.poolToggle}>
+                {/* FIXED: Using activePool class name */}
+                <button type="button" className={pool === 'BOYS' ? s.activePool : ''} onClick={() => setPool('BOYS')}>BOYS</button>
+                <button type="button" className={pool === 'GIRLS' ? s.activePool : ''} onClick={() => setPool('GIRLS')}>GIRLS</button>
+              </div>
             </div>
           </div>
         </div>
@@ -98,27 +110,41 @@ const AddTeam = () => {
         <div className={s.playersGrid}>
           {players.map((p, i) => (
             <div key={i} className={s.playerCard}>
-              <input className={s.minimalInput} value={p.name} onChange={e => updatePlayer(i, 'name', e.target.value)} placeholder="PLAYER NAME" required />
-              <input className={s.minimalInput} value={p.jersey} onChange={e => updatePlayer(i, 'jersey', e.target.value)} placeholder="JRSY" required />
+              <div className={s.playerHeader}>
+                <span className={s.index}>#{String(i + 1).padStart(2, '0')}</span>
+                <span className={s.tag}>ATHLETE_DATA</span>
+              </div>
+              <div className={s.playerInputs}>
+                <div className={s.nameField}>
+                  <input className={s.minimalInput} value={p.name} onChange={e => updatePlayer(i, 'name', e.target.value)} placeholder="FULL NAME" required />
+                </div>
+                <div className={s.jerseyField}>
+                  <input className={s.minimalInput} value={p.jersey} onChange={e => updatePlayer(i, 'jersey', e.target.value)} placeholder="JRSY" required />
+                </div>
+              </div>
             </div>
           ))}
         </div>
 
-        <button type="submit" className={s.submitBtn} disabled={loading}>
-          {loading ? 'SYNCING...' : 'DEPLOY TEAM'}
-        </button>
+        <div className={s.actionArea}>
+          <button type="submit" className={s.submitBtn} disabled={loading}>
+            <FontAwesomeIcon icon={faBolt} />
+            {loading ? 'SYNCING TO CLOUD...' : 'ADD TEAM'}
+          </button>
+        </div>
       </form>
 
       {successData && (
         <div className={s.successOverlay}>
           <div className={s.successModal}>
             <FontAwesomeIcon icon={faCheckCircle} className={s.successIcon} />
-            <h2>TEAM DEPLOYED</h2>
+            <h2>DEPLOYMENT SUCCESS</h2>
             <div className={s.qrBox}>
-              <QRCodeCanvas value={successData.playerIds[0]} size={200} level="H" includeMargin={true} />
+              <QRCodeCanvas value={successData.playerIds[0]} size={180} level="H" includeMargin={false} />
             </div>
-            <p>ID: {successData.playerIds[0]}</p>
-            <button onClick={() => setSuccessData(null)} className={s.closeBtn}>CONTINUE</button>
+            <code className={s.teamIdCode}>{successData.teamId}</code>
+            <p className={s.successNote}>Team data synchronized. Master QR key generated for Captain.</p>
+            <button onClick={() => setSuccessData(null)} className={s.closeBtn}>ACKNOWLEDGE</button>
           </div>
         </div>
       )}
