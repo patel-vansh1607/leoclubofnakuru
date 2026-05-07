@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserMinus, faCrown, faUsersGear, faExclamationTriangle, faShieldHalved, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faUserMinus, faCrown, faUsersGear, faExclamationTriangle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import r from './RoleManagement.module.css';
 
 const RoleManagement = () => {

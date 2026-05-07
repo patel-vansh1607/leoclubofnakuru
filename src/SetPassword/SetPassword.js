@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Eye, EyeOff } from 'lucide-react'; // Standard icons
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react'; 
 import s from '../Login/Login.module.css';
 
 const SetPassword = () => {
@@ -13,7 +13,9 @@ const SetPassword = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email;
+  
+  // Email is now used in the UI below to satisfy the linter and help the user
+  const email = location.state?.email || "User"; 
 
   const handleFinalize = async (e) => {
     e.preventDefault();
@@ -30,7 +32,6 @@ const SetPassword = () => {
 
     setLoading(true);
 
-    // Update the password
     const { error } = await supabase.auth.updateUser({
       password: password 
     });
@@ -48,8 +49,12 @@ const SetPassword = () => {
   return (
     <div className={s.viewportWrapper}>
       <div className={s.loginCard}>
+        <div className={s.iconHeader} style={{ color: '#ff4d4d', marginBottom: '15px', textAlign: 'center' }}>
+           <ShieldCheck size={48} strokeWidth={1.5} />
+        </div>
         <h1 className={s.loginTitle}>Security</h1>
-        <p className={s.loginSubtitle}>Step 3: Finalize Password</p>
+        {/* Using the email variable here fixes the 'unused' warning */}
+        <p className={s.loginSubtitle}>Finalizing account for: <br/><strong>{email}</strong></p>
         
         <form onSubmit={handleFinalize} className={s.unifiedFormContainer}>
           <div className={s.inputBlock}>

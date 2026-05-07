@@ -1,14 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { supabase } from '../supabaseClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFutbol, faHandshake, faUserCheck, faXmark, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faFutbol, faHandshake, faXmark, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import s from './ScoringTerminal.module.css';
 
 const ScoringTerminal = () => {
   const [scannedPlayer, setScannedPlayer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // 1. Move success logic into useCallback
+  const onScanSuccess = useCallback(async (decodedText) => {
+    if (loading || scannedPlayer) return;
+    setLoading(true);
+    
+    const { data, error } = await supabase
+      .from('players')
+      .select('*, teams(team_name)')
+      .eq('player_id', decodedText)
+      .single();
+
+    if (data) {
+      setScannedPlayer(data);
+      if (window.navigator.vibrate) window.navigator.vibrate(100);
+    } else {
+      console.error("Player not found", error);
+    }
+    setLoading(false);
+  }, [loading, scannedPlayer]); // Dependencies for callback
+
+  // 2. Move failure logic into useCallback
+  const onScanFailure = useCallback((error) => {
+    // Silently handle scan frame misses
+  }, []);
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner("reader", { 
@@ -22,30 +47,7 @@ const ScoringTerminal = () => {
     return () => {
       scanner.clear().catch(error => console.error("Scanner cleanup failed", error));
     };
-  }, []);
-
-  async function onScanSuccess(decodedText) {
-    if (loading || scannedPlayer) return;
-    setLoading(true);
-    
-    // Look up player based on the QR ID
-    const { data, error } = await supabase
-      .from('players')
-      .select('*, teams(team_name)')
-      .eq('player_id', decodedText)
-      .single();
-
-    if (data) {
-      setScannedPlayer(data);
-      // Optional: Add a haptic feedback (vibration) if supported
-      if (window.navigator.vibrate) window.navigator.vibrate(100);
-    } else {
-      console.error("Player not found", error);
-    }
-    setLoading(false);
-  }
-
-  function onScanFailure(error) { /* Silently handle search frame failures */ }
+  }, [onScanSuccess, onScanFailure]); // dependencies are now stable
 
   const recordStat = async (field, currentValue) => {
     setIsUpdating(true);
@@ -55,7 +57,6 @@ const ScoringTerminal = () => {
       .eq('id', scannedPlayer.id);
 
     if (!error) {
-      // Success feedback
       setScannedPlayer(null); 
       const toast = document.createElement('div');
       toast.className = s.toast;
@@ -80,7 +81,12 @@ const ScoringTerminal = () => {
         </div>
       </div>
 
-      {loading && <div className={s.loadingOverlay}><FontAwesomeIcon icon={faSpinner} spin /> ANALYZING...</div>}
+      {loading && (
+        <div className={s.loadingOverlay}>
+          <FontAwesomeIcon icon={faSpinner} spin /> 
+          <span>ANALYZING...</span>
+        </div>
+      )}
 
       {scannedPlayer && (
         <div className={s.actionOverlay}>
