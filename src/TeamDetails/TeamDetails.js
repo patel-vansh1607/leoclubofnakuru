@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { saveAs } from 'file-saver';
 import { useReactToPrint } from 'react-to-print';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faPrint, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faPrint, faDownload, faUsers, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import s from './TeamDetails.module.css';
 
 const TeamDetails = () => {
@@ -15,10 +15,9 @@ const TeamDetails = () => {
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Implementation of useReactToPrint for the "PRINT_ALL_CARDS" button
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: team ? `${team.team_name}_Roster` : 'Team_Roster',
+    documentTitle: team ? `${team.team_name}_ROSTER` : 'TEAM_ROSTER',
   });
 
   const fetchTeamData = useCallback(async () => {
@@ -37,7 +36,6 @@ const TeamDetails = () => {
     if (teamId) fetchTeamData();
   }, [teamId, fetchTeamData]);
 
-  // Download Helper for QR codes
   const downloadSVG = (elementId, fileName) => {
     const svg = document.getElementById(elementId);
     if (!svg) return;
@@ -46,75 +44,89 @@ const TeamDetails = () => {
     saveAs(svgBlob, `${fileName.replace(/\s+/g, '_')}.svg`);
   };
 
-  if (loading || !team) return <div className={s.statusScreen}>LOADING...</div>;
+  if (loading || !team) return <div className={s.loader}><div className={s.spinner}></div></div>;
 
   const sortedPlayers = team.players?.sort((a, b) => a.id - b.id) || [];
 
   return (
     <div className={s.page}>
-      {/* Hidden QR for Team Download */}
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+      </style>
+
+      {/* Hidden Team QR */}
       <div style={{ display: 'none' }}>
         <QRCodeSVG id="team-qr-main" value={team.team_id} bgColor="none" fgColor="#000" />
       </div>
 
-      <div className={s.headerNav}>
-        <button className={s.backLink} onClick={() => navigate(-1)}>
-          <FontAwesomeIcon icon={faArrowLeft} /> BACK
+      <header className={s.navBar}>
+        <button className={s.backBtn} onClick={() => navigate(-1)}>
+          <FontAwesomeIcon icon={faArrowLeft} /> <span>BROWSE_ALL</span>
         </button>
-        <div className={s.headerActions}>
-          <button className={s.actionBtn} onClick={handlePrint}>
-            <FontAwesomeIcon icon={faPrint} /> PRINT_ALL_CARDS
+        <div className={s.navActions}>
+          <button className={s.printBtn} onClick={handlePrint}>
+            <FontAwesomeIcon icon={faPrint} /> PRINT_BATCH
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className={s.hero}>
-        <div className={s.heroContent}>
-          <div className={s.poolIndicator}>{team.pool} POOL</div>
-          <h1 className={s.teamName}>{team.team_name}</h1>
-          <div className={s.statsBar}>
-            <div className={s.statItem}>
-              <label>TEAM_ID</label>
-              <span>{team.team_id}</span>
+      <section className={s.hero}>
+        <div className={s.heroMain}>
+          <div className={s.badge}>
+            <FontAwesomeIcon icon={faShieldHalved} /> {team.pool} DIVISION
+          </div>
+          <h1 className={s.teamTitle}>{team.team_name}</h1>
+          <div className={s.heroStats}>
+            <div className={s.hStat}>
+              <label>REFERENCE_HASH</label>
+              <p>{team.team_id}</p>
             </div>
-            <div className={s.statItem}>
-              <label>SQUAD_SIZE</label>
-              <span>{sortedPlayers.length} / 12</span>
+            <div className={s.hStat}>
+              <label>VERIFIED_ATHLETES</label>
+              <p>{sortedPlayers.length} / 12</p>
             </div>
           </div>
         </div>
 
-        <div className={s.teamQrContainer}>
-          <QRCodeSVG value={team.team_id} size={80} bgColor="transparent" fgColor="#f1c40f" />
-          <button className={s.teamDlBtn} onClick={() => downloadSVG('team-qr-main', `${team.team_name}_TEAM_CODE`)}>
-            <FontAwesomeIcon icon={faDownload} /> DOWNLOAD_TEAM_SVG
+        <div className={s.qrDossier}>
+          <div className={s.qrWrapper}>
+            <QRCodeSVG value={team.team_id} size={90} bgColor="transparent" fgColor="#f1c40f" />
+          </div>
+          <button className={s.dlTeamCode} onClick={() => downloadSVG('team-qr-main', `${team.team_name}_KEY`)}>
+            <FontAwesomeIcon icon={faDownload} /> GET_KEY
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* Container for Printing */}
-      <div ref={printRef} className={s.printableArea}>
-        <div className={s.rosterSection}>
-          <h3 className={s.sectionTitle}>PLAYER_MANIFEST_2026</h3>
+      <div className={s.contentSection}>
+        <div className={s.sectionHeader}>
+          <div className={s.sectionTitle}>
+            <FontAwesomeIcon icon={faUsers} />
+            <h3>ATHLETE_ROSTER</h3>
+          </div>
+          <div className={s.titleLine}></div>
+        </div>
+
+        <div ref={printRef} className={s.printableArea}>
           <div className={s.playerGrid}>
-            {sortedPlayers.map((player) => (
+            {sortedPlayers.map((player, i) => (
               <div key={player.id} className={s.playerCard}>
-                {/* Hidden high-res QR for download */}
                 <div style={{ display: 'none' }}>
                   <QRCodeSVG id={`qr-${player.id}`} value={player.player_id} bgColor="none" fgColor="#000" />
                 </div>
                 
-                <div className={s.jerseySection}>
-                  <span className={s.jerseyNum}>{player.jersey_number}</span>
-                </div>
-
-                <div className={s.playerDetails}>
-                  <h4 className={s.playerName}>{player.name}</h4>
-                  <p className={s.playerUid}>{player.player_id}</p>
+                <div className={s.cardIdentity}>
+                  <div className={s.jerseyBox}>
+                    <span className={s.jNum}>{player.jersey_number}</span>
+                  </div>
+                  <div className={s.pMeta}>
+                    <h4 className={s.pName}>{player.name}</h4>
+                    <span className={s.pUid}>{player.player_id}</span>
+                  </div>
                 </div>
 
                 <button 
-                  className={s.downloadBtn} 
+                  className={s.pDlBtn} 
                   onClick={(e) => { e.stopPropagation(); downloadSVG(`qr-${player.id}`, player.name); }}
                 >
                   <FontAwesomeIcon icon={faDownload} />
