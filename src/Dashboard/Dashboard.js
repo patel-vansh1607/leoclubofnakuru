@@ -16,7 +16,7 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState('scorer');
   const [tournamentDropdown, setTournamentDropdown] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(0); //
+  const [unreadMessages, setUnreadMessages] = useState(0); 
   
   const leoLogo = "https://res.cloudinary.com/dxgkcyfrl/image/upload/v1777572486/7932664-03_scur6z.png";
 
@@ -36,7 +36,7 @@ const Dashboard = () => {
     };
 
     fetchUserLevel();
-    fetchMessageCount(); //
+    fetchMessageCount(); 
   }, [session]);
 
   const isActive = (path) => location.pathname === path;
@@ -56,34 +56,11 @@ const Dashboard = () => {
     });
 
     if (result.isConfirmed) {
-      MySwal.fire({
-        title: 'Logging out...',
-        allowOutsideClick: false,
-        background: '#121212',
-        color: '#fff',
-        didOpen: () => { MySwal.showLoading(); }
-      });
-
       try {
         await supabase.auth.signOut();
-        await MySwal.fire({
-          icon: 'success',
-          title: 'Logged Out',
-          text: 'See you next time!',
-          timer: 1500,
-          showConfirmButton: false,
-          background: '#121212',
-          color: '#fff'
-        });
         navigate('/');
       } catch (error) {
-        MySwal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to logout properly.',
-          background: '#121212',
-          color: '#fff'
-        });
+        console.error("Logout error", error);
       }
     }
   };
@@ -99,7 +76,9 @@ const Dashboard = () => {
     if (path.includes('draft-teams')) return 'Draft Teams';
     if (path.includes('master-oversight')) return 'Master Oversight';
     if (path.includes('verify-player')) return 'Field Verification';
-    if (path.includes('messages')) return 'Contact Inquiries'; //
+    if (path.includes('scoring')) return 'Match Scoring';
+    if (path.includes('groups')) return 'Group Management'; 
+    if (path.includes('messages')) return 'Contact Inquiries'; 
     return 'Overview';
   };
 
@@ -128,14 +107,12 @@ const Dashboard = () => {
               <span>Overview</span>
             </button>
 
-            {/* MESSAGES SECTION - */}
             <button className={isActive('/dashboard/messages') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/messages'); setSidebarOpen(false); }}>
               <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faEnvelopeOpenText} /></div>
               <span>Messages</span>
               {unreadMessages > 0 && <span className={s.msgBadge}>{unreadMessages}</span>}
             </button>
             
-            {/* TOURNAMENT SECTION */}
             <div className={s.navGroup}>
               <button 
                 className={tournamentDropdown || location.pathname.includes('submissions') || location.pathname.includes('approvals') || location.pathname.includes('teams') ? s.activeBtn : s.navBtn} 
@@ -164,6 +141,13 @@ const Dashboard = () => {
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faQrcode} /></div>
                   <span>Verify Player</span>
                 </button>
+
+                {(userRole === 'master_admin' || userRole === 'scorer') && (
+                  <button className={isActive('/dashboard/scoring') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/scoring'); setSidebarOpen(false); }}>
+                    <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faFutbol} /></div>
+                    <span>Match Scoring</span>
+                  </button>
+                )}
               </>
             )}
 
@@ -182,10 +166,16 @@ const Dashboard = () => {
               </>
             )}
 
-            {/* SYSTEM - Only Vansh as Master Admin can grant access */}
+            {/* SYSTEM - ONLY VISIBLE TO MASTER ADMIN */}
             {userRole === 'master_admin' && (
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
+                
+                <button className={isActive('/dashboard/groups') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/groups'); setSidebarOpen(false); }}>
+                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faLayerGroup} /></div>
+                  <span>Group Pools</span>
+                </button>
+
                 <button className={isActive('/dashboard/master-oversight') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/master-oversight'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faChessKing} /></div>
                   <span>Master Oversight</span>
@@ -203,25 +193,22 @@ const Dashboard = () => {
           </nav>
         </div>
 
-       <div className={s.sidebarFooter}>
-  <div className={s.userCard}>
-    <div className={s.avatar}>
-      {session?.user?.email?.charAt(0).toUpperCase()}
-    </div>
-    <div className={s.userMeta}>
-      <span className={s.userName}>{session?.user?.email.split('@')[0]}</span>
-      <div className={s.roleBadgeWrapper}>
-        <div className={s.roleDot} />
-        <span className={s.roleBadge}>{userRole.replace('_', ' ')}</span>
-      </div>
-    </div>
-  </div>
-  
-  <button className={s.logoutBtn} onClick={handleLogout}>
-    <FontAwesomeIcon icon={Icons.faSignOutAlt} />
-    <span>End Session</span>
-  </button>
-</div>
+        <div className={s.sidebarFooter}>
+          <div className={s.userCard}>
+            <div className={s.avatar}>{session?.user?.email?.charAt(0).toUpperCase()}</div>
+            <div className={s.userMeta}>
+              <span className={s.userName}>{session?.user?.email.split('@')[0]}</span>
+              <div className={s.roleBadgeWrapper}>
+                <div className={s.roleDot} />
+                <span className={s.roleBadge}>{userRole.replace('_', ' ')}</span>
+              </div>
+            </div>
+          </div>
+          <button className={s.logoutBtn} onClick={handleLogout}>
+            <FontAwesomeIcon icon={Icons.faSignOutAlt} />
+            <span>End Session</span>
+          </button>
+        </div>
       </aside>
 
       <main className={s.mainContent}>
@@ -229,15 +216,9 @@ const Dashboard = () => {
           <img src={leoLogo} alt="Logo" className={s.mobileLogo} />
           <h2 className={s.mobileBrandText}>LEO<span>CUP</span></h2>
         </div>
-
-        <div className={s.topBar}>
-          <h1 className={s.viewTitle}>{getViewTitle()}</h1>
-        </div>
-        
+        <div className={s.topBar}><h1 className={s.viewTitle}>{getViewTitle()}</h1></div>
         <div className={s.scrollArea}>
-          <div className={s.contentWrapper}>
-            <Outlet context={{ session, userRole }} />
-          </div>
+          <div className={s.contentWrapper}><Outlet context={{ session, userRole }} /></div>
         </div>
       </main>
     </div>

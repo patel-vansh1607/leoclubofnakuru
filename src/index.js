@@ -19,6 +19,8 @@ import AddTeam from './AddTeam/AddTeam';
 import PlayingTeams from './PlayingTeams/PlayingTeams'; 
 import TeamDetails from './TeamDetails/TeamDetails';
 import ScorerVerify from './ScoreVerify/ScoreVerify';
+import ScoringTerminal from './ScoringTerminal/ScoringTerminal'; 
+import GroupManager from './GroupManager/GroupManager'; // ADDED THIS
 import QuickQR from './QuickQR/QuickQR';
 import About from './AboutUs/AboutUs'; 
 import Maintenance from './Maintenance/Maintenance';
@@ -44,7 +46,6 @@ const Gatekeeper = ({ children }) => {
           .eq('id', user.id)
           .single();
         
-        // If profile doesn't exist or role is unauthorized, block them
         setRole(data?.role || 'unauthorized');
       }
       setLoading(false);
@@ -54,15 +55,12 @@ const Gatekeeper = ({ children }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/admin'; // Force reload to login
+    window.location.href = '/admin'; 
   };
 
   if (loading) return <div className="loader-center">SYSTEM_CHECKING...</div>;
-  
-  // If not logged in at all, go to login page
   if (role === 'guest') return <Navigate to="/admin" />;
   
-  // If logged in but not approved by Vansh
   if (role === 'unauthorized') {
     return (
       <div style={{ height: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: 'white', padding: '20px' }}>
@@ -98,15 +96,11 @@ const Gatekeeper = ({ children }) => {
               LOGOUT TERMINAL
             </button>
           </div>
-          <footer style={{ marginTop: '40px', fontSize: '0.6rem', opacity: 0.3, fontFamily: 'monospace' }}>
-            ID: {supabase.auth.getUser()?.id || 'AUTH_PENDING'}
-          </footer>
         </div>
       </div>
     );
   }
 
-  // If role is 'admin', 'scorer', etc., let them in
   return children;
 };
 
@@ -123,6 +117,8 @@ const PageTitleUpdater = () => {
       '/signup/verify': 'Verification | Leo Football Cup 2026',
       '/signup/password': 'Security Setup | Leo Football Cup 2026',
       '/dashboard': 'Dashboard | Leo Football Cup 2026',
+      '/dashboard/scoring': 'Match Scoring | Leo Football Cup 2026', 
+      '/dashboard/groups': 'Group Pools | Leo Football Cup 2026', // ADDED TITLE
       '/contact': 'Contact Us | Leo Football Cup 2026',
     };
     document.title = routeTitles[location.pathname] || 'Leo Football Cup 2026';
@@ -160,6 +156,8 @@ root.render(
             <Route index element={<div style={{padding: '20px', color: 'white'}}><h2>DASHBOARD OVERVIEW</h2></div>} />
             <Route path="teams" element={<TeamGallery />} /> 
             <Route path="verify-player" element={<ScorerVerify />} />
+            <Route path="scoring" element={<ScoringTerminal />} /> 
+            <Route path="groups" element={<GroupManager />} /> {/* ADDED ROUTE */}
             <Route path="add-team" element={<AddTeam />} />
             <Route path="playing-teams" element={<PlayingTeams />} />
             <Route path="playing-teams/:teamId" element={<TeamDetails />} />
