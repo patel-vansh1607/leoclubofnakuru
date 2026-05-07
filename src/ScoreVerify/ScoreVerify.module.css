@@ -1,111 +1,186 @@
-.mainWrapper {
-  width: 100vw;
-  height: 100vh;
-  background: #000;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+.page {
+  min-height: 85vh; /* Adjusted for dashboard navigation */
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  overflow: hidden;
-  color: #fff;
-  font-family: 'Inter', sans-serif;
+  align-items: center;
+  background: transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 20px;
 }
 
-.scannerContainer {
+.container {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- HEADER --- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 10px;
+}
+
+.glowIcon {
+  font-size: 2rem;
+  color: #ff4d4d;
+  filter: drop-shadow(0 0 10px rgba(255, 77, 77, 0.4));
+}
+
+.headerText h1 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.headerText p {
+  font-size: 0.6rem;
+  margin: 0;
+  opacity: 0.5;
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+
+/* --- SCANNER FRAME --- */
+.scannerFrame {
   position: relative;
   width: 100%;
-  max-width: 500px; /* Limits size on laptop so it stays centered */
-  aspect-ratio: 1/1; /* Keeps it perfectly square */
-  background: #000;
-  border-radius: 40px;
+  aspect-ratio: 1 / 1;
+  background: #080808;
+  border-radius: 30px;
+  border: 1px solid #1a1a1a;
   overflow: hidden;
-  box-shadow: 0 0 100px rgba(0, 255, 136, 0.05);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
 .reader {
-  width: 100%;
-  height: 100%;
-}
-
-/* Force the video to be big and fill the area */
-.reader video {
   width: 100% !important;
   height: 100% !important;
+}
+
+.reader video {
   object-fit: cover !important;
 }
 
-/* The Success/Error/Verifying Screens */
-.fullOverlay {
+/* --- DECORATIVE GUIDES --- */
+.laser {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: #ff4d4d;
+  box-shadow: 0 0 15px #ff4d4d;
+  z-index: 10;
+  animation: scanLoop 2.5s infinite ease-in-out;
+}
+
+@keyframes scanLoop {
+  0%, 100% { top: 20%; opacity: 0.2; }
+  50% { top: 80%; opacity: 1; }
+}
+
+.corners div {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #ff4d4d;
+  z-index: 5;
+}
+
+.cTopLeft { top: 15%; left: 15%; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+.cTopRight { top: 15%; right: 15%; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+.cBottomLeft { bottom: 15%; left: 15%; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+.cBottomRight { bottom: 15%; right: 15%; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+
+.guide {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,0.7);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* --- OVERLAYS --- */
+.overlay {
   position: absolute;
   inset: 0;
-  z-index: 50;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(15px);
+  z-index: 20;
+  backdrop-filter: blur(12px);
   animation: fadeIn 0.3s ease;
 }
 
-.verifying { background: rgba(0, 0, 0, 0.8); }
-.success { background: rgba(0, 255, 136, 0.95); color: #000; }
-.error { background: rgba(220, 38, 38, 0.95); }
+.verifying { background: rgba(0,0,0,0.8); }
+.success { background: rgba(0, 255, 136, 0.1); border: 4px solid #00ff88; border-radius: 30px; }
+.error { background: rgba(255, 77, 77, 0.1); border: 4px solid #ff4d4d; border-radius: 30px; }
 
-.content {
+.statusBox {
   text-align: center;
-  padding: 20px;
-}
-
-.loader { font-size: 4rem; color: #00ff88; margin-bottom: 20px; }
-.popIcon { font-size: 6rem; margin-bottom: 20px; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
-.playerName { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; }
-.playerSub { font-size: 1.2rem; font-weight: 600; opacity: 0.8; margin-top: 5px; }
-
-/* Viewfinder Visuals */
-.uiGuides {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.targetBox {
-    width: 70%;
-    height: 70%;
-    border: 2px solid rgba(0, 255, 136, 0.4);
-    border-radius: 30px;
-    box-shadow: 0 0 0 5000px rgba(0,0,0,0.6);
-}
-
-.guideText {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.5);
-}
-
-.bottomBar {
-  padding: 20px;
   display: flex;
-  gap: 10px;
+  flex-direction: column;
   align-items: center;
-  color: #333;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 2px;
+  gap: 15px;
 }
 
+.iconVerifying { font-size: 3rem; color: #ff4d4d; }
+.successCircle { 
+  font-size: 4rem; 
+  color: #00ff88; 
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.iconError { font-size: 4rem; color: #ff4d4d; animation: shake 0.4s; }
+
+.playerCard {
+  background: rgba(0,0,0,0.6);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.teamName { color: #00ff88; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+.playerName { font-size: 1.4rem; font-weight: 800; color: #fff; margin: 5px 0; }
+.jersey { font-size: 1.2rem; font-weight: 800; color: #00ff88; }
+
+/* --- FOOTER --- */
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0.4;
+  color: #fff;
+}
+
+/* --- ANIMATIONS --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes pop { 
-    from { transform: scale(0.5); opacity: 0; } 
-    to { transform: scale(1); opacity: 1; } 
+@keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
 }
-
-/* Hide Library Brandings */
-#reader__dashboard, #reader img { display: none !important; }
-#reader__scan_region { border: none !important; }   

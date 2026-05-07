@@ -8,7 +8,8 @@ import {
   faCheckCircle, 
   faTimesCircle, 
   faMicrochip,
-  faExpand
+  faExpand,
+  faShieldHalved
 } from '@fortawesome/free-solid-svg-icons';
 import s from './ScoreVerify.module.css';
 
@@ -18,15 +19,16 @@ const ScoreVerify = () => {
   const scannerRef = useRef(null);
   const isProcessing = useRef(false);
 
-  // Initializing sounds inside useRef
   const sounds = useRef({
-    success: new Howl({ src: ['https://www.reactsounds.com/sounds/notification/success.mp3'], volume: 0.8 }),
-    error: new Howl({ src: ['https://www.reactsounds.com/sounds/notification/error.mp3'], volume: 0.8 }),
-    heartbeat: new Howl({ src: ['https://www.reactsounds.com/sounds/ambient/heartbeat.mp3'], loop: true, volume: 0.4 })
+    success: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'], volume: 0.6 }),
+    error: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3'], volume: 0.6 }),
+    heartbeat: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'], loop: true, volume: 0.3 })
   });
 
   const handleScan = useCallback(async (decodedText) => {
     if (isProcessing.current) return;
+    
+    // Safety check for your specific ID format
     const upperText = decodedText.trim().toUpperCase();
     if (!upperText.includes('LEO-CUP-')) return;
 
@@ -56,33 +58,28 @@ const ScoreVerify = () => {
       setStatus('error');
     }
 
+    // Auto-reset after a delay
     setTimeout(() => {
       setStatus('ready');
       setPlayer(null);
       isProcessing.current = false;
-    }, 2800); 
+    }, 3500); 
   }, []);
 
   useEffect(() => {
     const html5QrCode = new Html5Qrcode("reader");
     scannerRef.current = html5QrCode;
     
-    // FIX: Copy refs to variables inside the effect
-    const currentScanner = html5QrCode;
-    const currentHeartbeat = sounds.current.heartbeat;
-
     const startScanner = async () => {
       try {
-        await currentScanner.start(
+        await html5QrCode.start(
           { facingMode: "environment" }, 
           { 
-            fps: 25, 
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                const size = Math.floor(minEdge * 0.8);
+            fps: 30, 
+            qrbox: (w, h) => {
+                const size = Math.min(w, h) * 0.7;
                 return { width: size, height: size };
-            },
-            aspectRatio: 1.0 
+            }
           }, 
           handleScan
         );
@@ -94,62 +91,86 @@ const ScoreVerify = () => {
     startScanner();
 
     return () => {
-      // Use the variables we captured at the start of the effect
-      if (currentScanner?.isScanning) {
-        currentScanner.stop()
-          .then(() => currentScanner.clear())
-          .catch((e) => console.warn("Cleanup error", e));
+      if (html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => html5QrCode.clear());
       }
-      currentHeartbeat.stop();
+      sounds.current.heartbeat.stop();
     };
   }, [handleScan]);
 
   return (
-    <div className={s.mainWrapper}>
-      <div className={s.scannerContainer}>
-        <div id="reader" className={s.reader}></div>
-        
-        {status !== 'ready' && (
-          <div className={`${s.fullOverlay} ${s[status]}`}>
-            {status === 'verifying' && (
-              <div className={s.content}>
-                <FontAwesomeIcon icon={faCircleNotch} spin className={s.loader} />
-                <h2 className={s.statusTitle}>VALIDATING...</h2>
-              </div>
-            )}
-
-            {status === 'success' && (
-              <div className={s.content}>
-                <FontAwesomeIcon icon={faCheckCircle} className={s.popIcon} />
-                <h2 className={s.authTitle}>AUTHORIZED</h2>
-                <div className={s.playerInfo}>
-                  <p className={s.playerName}>{player?.name}</p>
-                  <p className={s.playerSub}>{player?.teams?.team_name} | #{player?.jersey_number}</p>
-                </div>
-              </div>
-            )}
-
-            {status === 'error' && (
-              <div className={s.content}>
-                <FontAwesomeIcon icon={faTimesCircle} className={s.popIcon} />
-                <h2 className={s.errorTitle}>ACCESS DENIED</h2>
-                <p>UNREGISTERED CREDENTIALS</p>
-              </div>
-            )}
+    <div className={s.page}>
+      <div className={s.container}>
+        {/* HEADER */}
+        <div className={s.header}>
+          <div className={s.glowIcon}><FontAwesomeIcon icon={faShieldHalved} /></div>
+          <div className={s.headerText}>
+            <h1>FIELD_VERIFIER</h1>
+            <p>SQUAD_IDENTIFICATION_TERMINAL</p>
           </div>
-        )}
+        </div>
 
-        {status === 'ready' && (
-            <div className={s.uiGuides}>
-                <div className={s.targetBox}></div>
-                <p className={s.guideText}><FontAwesomeIcon icon={faExpand} /> ALIGN QR CODE</p>
+        {/* SCANNER AREA */}
+        <div className={s.scannerFrame}>
+          <div id="reader" className={s.reader}></div>
+          
+          {/* THE SCANNING UI GUIDES */}
+          {status === 'ready' && (
+            <>
+              <div className={s.laser}></div>
+              <div className={s.corners}>
+                <div className={s.cTopLeft}></div>
+                <div className={s.cTopRight}></div>
+                <div className={s.cBottomLeft}></div>
+                <div className={s.cBottomRight}></div>
+              </div>
+              <div className={s.guide}>
+                <FontAwesomeIcon icon={faExpand} />
+                <span>ALIGN_LEO_ID</span>
+              </div>
+            </>
+          )}
+
+          {/* STATUS OVERLAYS */}
+          {status !== 'ready' && (
+            <div className={`${s.overlay} ${s[status]}`}>
+              {status === 'verifying' && (
+                <div className={s.statusBox}>
+                  <FontAwesomeIcon icon={faCircleNotch} spin className={s.iconVerifying} />
+                  <h2>SEARCHING_DB...</h2>
+                </div>
+              )}
+
+              {status === 'success' && (
+                <div className={s.statusBox}>
+                  <div className={s.successCircle}>
+                    <FontAwesomeIcon icon={faCheckCircle} />
+                  </div>
+                  <h2 className={s.successText}>AUTHORIZED</h2>
+                  <div className={s.playerCard}>
+                    <span className={s.teamName}>{player?.teams?.team_name}</span>
+                    <span className={s.playerName}>{player?.name}</span>
+                    <span className={s.jersey}>#{player?.jersey_number}</span>
+                  </div>
+                </div>
+              )}
+
+              {status === 'error' && (
+                <div className={s.statusBox}>
+                  <FontAwesomeIcon icon={faTimesCircle} className={s.iconError} />
+                  <h2 className={s.errorText}>DENIED</h2>
+                  <p>INVALID_OR_UNREGISTERED</p>
+                </div>
+              )}
             </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className={s.bottomBar}>
-        <FontAwesomeIcon icon={faMicrochip} />
-        <span>LEO CUP SYSTEM v2.06</span>
+        {/* FOOTER */}
+        <div className={s.footer}>
+          <FontAwesomeIcon icon={faMicrochip} />
+          <span>LEO CUP SECURE_CORE v2.06</span>
+        </div>
       </div>
     </div>
   );
