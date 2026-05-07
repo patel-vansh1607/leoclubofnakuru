@@ -203,18 +203,25 @@ const Dashboard = () => {
           </nav>
         </div>
 
-        <div className={s.sidebarFooter}>
-          <div className={s.userCard}>
-            <div className={s.avatar}>{session?.user?.email?.charAt(0).toUpperCase()}</div>
-            <div className={s.userMeta}>
-              <span className={s.userEmail}>{session?.user?.email.split('@')[0]}</span>
-              <span className={s.roleBadge}>{userRole.replace('_', ' ')}</span>
-            </div>
-          </div>
-          <button className={s.logoutBtn} onClick={handleLogout}>
-            <FontAwesomeIcon icon={Icons.faSignOutAlt} /> Logout
-          </button>
-        </div>
+       <div className={s.sidebarFooter}>
+  <div className={s.userCard}>
+    <div className={s.avatar}>
+      {session?.user?.email?.charAt(0).toUpperCase()}
+    </div>
+    <div className={s.userMeta}>
+      <span className={s.userName}>{session?.user?.email.split('@')[0]}</span>
+      <div className={s.roleBadgeWrapper}>
+        <div className={s.roleDot} />
+        <span className={s.roleBadge}>{userRole.replace('_', ' ')}</span>
+      </div>
+    </div>
+  </div>
+  
+  <button className={s.logoutBtn} onClick={handleLogout}>
+    <FontAwesomeIcon icon={Icons.faSignOutAlt} />
+    <span>End Session</span>
+  </button>
+</div>
       </aside>
 
       <main className={s.mainContent}>
