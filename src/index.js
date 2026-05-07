@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './index.css';
+
+// --- IMPORTS ---
 import App from './App';
 import Home from './Home/Home';
 import Registration from './Registration/Registration';
@@ -13,6 +15,7 @@ import Signup from './SignUp/Signup';
 import VerifyOTP from './VerifyOTP/VerifyOTP'; 
 import SetPassword from './SetPassword/SetPassword'; 
 import Dashboard from './Dashboard/Dashboard';
+import Overview from './Overview/Overview'; // ADDED OVERVIEW IMPORT
 import RoleManagement from './RoleManagement/RoleManagement';
 import DraftTeams from './DraftTeams/DraftTeams';
 import AddTeam from './AddTeam/AddTeam';
@@ -20,7 +23,7 @@ import PlayingTeams from './PlayingTeams/PlayingTeams';
 import TeamDetails from './TeamDetails/TeamDetails';
 import ScorerVerify from './ScoreVerify/ScoreVerify';
 import ScoringTerminal from './ScoringTerminal/ScoringTerminal'; 
-import GroupManager from './GroupManager/GroupManager'; // ADDED THIS
+import GroupManager from './GroupManager/GroupManager'; 
 import QuickQR from './QuickQR/QuickQR';
 import About from './AboutUs/AboutUs'; 
 import Maintenance from './Maintenance/Maintenance';
@@ -104,6 +107,7 @@ const Gatekeeper = ({ children }) => {
   return children;
 };
 
+// --- PAGE TITLE UPDATER ---
 const PageTitleUpdater = () => {
   const location = useLocation();
   useEffect(() => {
@@ -116,9 +120,9 @@ const PageTitleUpdater = () => {
       '/signup': 'Identification | Leo Football Cup 2026',
       '/signup/verify': 'Verification | Leo Football Cup 2026',
       '/signup/password': 'Security Setup | Leo Football Cup 2026',
-      '/dashboard': 'Dashboard | Leo Football Cup 2026',
+      '/dashboard': 'Overview | Leo Football Cup 2026', // UPDATED FOR OVERVIEW
       '/dashboard/scoring': 'Match Scoring | Leo Football Cup 2026', 
-      '/dashboard/groups': 'Group Pools | Leo Football Cup 2026', // ADDED TITLE
+      '/dashboard/groups': 'Group Pools | Leo Football Cup 2026',
       '/contact': 'Contact Us | Leo Football Cup 2026',
     };
     document.title = routeTitles[location.pathname] || 'Leo Football Cup 2026';
@@ -153,11 +157,11 @@ root.render(
           
           {/* PROTECTED DASHBOARD */}
           <Route path="dashboard" element={<Gatekeeper><Dashboard /></Gatekeeper>}>
-            <Route index element={<div style={{padding: '20px', color: 'white'}}><h2>DASHBOARD OVERVIEW</h2></div>} />
+            <Route index element={<Overview />} /> {/* NOW PROPERLY IMPORTED */}
             <Route path="teams" element={<TeamGallery />} /> 
             <Route path="verify-player" element={<ScorerVerify />} />
             <Route path="scoring" element={<ScoringTerminal />} /> 
-            <Route path="groups" element={<GroupManager />} /> {/* ADDED ROUTE */}
+            <Route path="groups" element={<GroupManager />} /> 
             <Route path="add-team" element={<AddTeam />} />
             <Route path="playing-teams" element={<PlayingTeams />} />
             <Route path="playing-teams/:teamId" element={<TeamDetails />} />

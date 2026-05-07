@@ -74,7 +74,6 @@ const Dashboard = () => {
     if (path.includes('add-team')) return 'Add New Team';
     if (path.includes('playing-teams')) return 'Tournament Roster';
     if (path.includes('draft-teams')) return 'Draft Teams';
-    if (path.includes('master-oversight')) return 'Master Oversight';
     if (path.includes('verify-player')) return 'Field Verification';
     if (path.includes('scoring')) return 'Match Scoring';
     if (path.includes('groups')) return 'Group Management'; 
@@ -176,10 +175,6 @@ const Dashboard = () => {
                   <span>Group Pools</span>
                 </button>
 
-                <button className={isActive('/dashboard/master-oversight') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/master-oversight'); setSidebarOpen(false); }}>
-                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faChessKing} /></div>
-                  <span>Master Oversight</span>
-                </button>
                 <button className={isActive('/dashboard/roles') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/roles'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUserShield} /></div>
                   <span>Role Access</span>
