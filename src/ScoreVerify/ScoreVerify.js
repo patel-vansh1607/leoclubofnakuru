@@ -70,6 +70,9 @@ const ScoreVerify = () => {
     const html5QrCode = new Html5Qrcode("reader");
     scannerRef.current = html5QrCode;
     
+    // Capture the current heartbeat sound reference into a local variable
+    const heartbeatRef = sounds.current.heartbeat;
+
     const startScanner = async () => {
       try {
         await html5QrCode.start(
@@ -91,13 +94,17 @@ const ScoreVerify = () => {
     startScanner();
 
     return () => {
+      // Use the stable variable instead of the mutable .current
       if (html5QrCode.isScanning) {
         html5QrCode.stop().then(() => html5QrCode.clear());
       }
-      sounds.current.heartbeat.stop();
+      
+      // We use heartbeatRef here because we know exactly what it points to
+      if (heartbeatRef) {
+        heartbeatRef.stop();
+      }
     };
   }, [handleScan]);
-
   return (
     <div className={s.page}>
       <div className={s.container}>
