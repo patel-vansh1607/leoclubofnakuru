@@ -73,37 +73,46 @@ const ScoreVerify = () => {
     }, 4000); 
   }, [status]);
 
-  useEffect(() => {
-  const html5QrCode = new Html5Qrcode("reader");
-  scannerRef.current = html5QrCode;
+ useEffect(() => {
+    const html5QrCode = new Html5Qrcode("reader");
+    scannerRef.current = html5QrCode;
 
-  const config = { 
-    fps: 20, 
-    qrbox: { width: 250, height: 250 },
-    aspectRatio: 1.0
-  };
-
-  html5QrCode.start(
-    { facingMode: "environment" }, 
-    config, 
-    handleScan
-  ).then(() => setScannerReady(true))
-   .catch(err => console.error("Scanner start error:", err));
-
-  // --- UPDATED CLEANUP LOGIC ---
-  return () => {
-    if (scannerRef.current) {
-      // Check if the scanner is actually running (state 2 is SCANNING)
-      if (scannerRef.current.getState() === 2) {
-        scannerRef.current.stop()
-          .then(() => {
-            scannerRef.current.clear();
-          })
-          .catch(e => console.warn("Failed to stop scanner:", e));
+    const config = { 
+      fps: 60, // Maximum frame rate for instant detection
+      // Setting qrbox to a very large number forces full-frame scanning
+      qrbox: (vw, vh) => { return { width: vw, height: vh } }, 
+      aspectRatio: 1.0,
+      disableFlip: false,
+      experimentalFeatures: {
+        // Crucial: Uses native mobile hardware acceleration
+        useBarCodeDetectorIfSupported: true 
       }
-    }
-  };
-}, [handleScan]);
+    };
+
+    // Use a more aggressive scanning environment
+    html5QrCode.start(
+      { facingMode: "environment" }, 
+      config, 
+      (decodedText) => {
+        // Immediate check: if it's our prefix, handle it.
+        if (decodedText.toUpperCase().includes('LEO-CUP-')) {
+          handleScan(decodedText);
+        }
+      }
+    ).then(() => setScannerReady(true))
+     .catch(err => console.error("Ultra-scan failed to initiate:", err));
+
+    return () => {
+      if (scannerRef.current) {
+        if (scannerRef.current.getState() === 2) {
+          scannerRef.current.stop()
+            .then(() => scannerRef.current.clear())
+            .catch(e => console.warn("Scanner cleanup failed:", e));
+        }
+      }
+    };
+  }, [handleScan]);
+  
   return (
     <div className={s.page}>
       <div className={s.container}>

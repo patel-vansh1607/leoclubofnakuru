@@ -87,10 +87,13 @@
   height: 100% !important;
 }
 
-/* Make video cover the box */
 .reader video {
   object-fit: cover !important;
-  transform: scale(1.1); /* Slight zoom for better focus */
+  width: 100% !important;
+  height: 100% !important;
+  /* 1.3x zoom focuses on the QR detail even if the phone is far away */
+  transform: scale(1.3); 
+  filter: contrast(1.1) brightness(1.1); /* Sharpens the image for the engine */
 }
 
 .interfaceLayer {
@@ -111,19 +114,15 @@
 }
 
 .laser {
-  position: absolute;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #00f2ff, transparent);
-  box-shadow: 0 0 20px #00f2ff;
-  animation: laserMove 2s infinite ease-in-out;
-  z-index: 10;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #f1c40f, transparent);
+  box-shadow: 0 0 25px #f1c40f;
+  animation: laserMove 0.8s infinite linear; /* Fast sweep */
 }
 
 @keyframes laserMove {
-  0% { top: 10%; opacity: 0; }
-  50% { top: 50%; opacity: 1; }
-  100% { top: 90%; opacity: 0; }
+  0% { top: 0%; }
+  100% { top: 100%; }
 }
 
 /* --- OVERLAYS --- */
@@ -192,21 +191,13 @@
   height: 40px;
   border: 3px solid #00f2ff;
 }
-
-.cTopLeft { top: 20%; left: 20%; border-right: 0; border-bottom: 0; }
-.cTopRight { top: 20%; right: 20%; border-left: 0; border-bottom: 0; }
-.cBottomLeft { bottom: 20%; left: 20%; border-right: 0; border-top: 0; }
-.cBottomRight { bottom: 20%; right: 20%; border-left: 0; border-top: 0; }
-
+.cTopLeft { top: 5%; left: 5%; border-width: 4px; }
+.cTopRight { top: 5%; right: 5%; border-width: 4px; }
+.cBottomLeft { bottom: 5%; left: 5%; border-width: 4px; }
+.cBottomRight { bottom: 5%; right: 5%; border-width: 4px; }
 .hint {
-  position: absolute;
-  bottom: 10%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #00f2ff;
-  font-size: 0.65rem;
-  font-weight: 700;
+  opacity: 0.5;
+  font-size: 0.55rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
