@@ -11,3 +11,120 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+/* Full screen container */
+.loaderContainer {
+  height: 100vh;
+  width: 100%;
+  background: #050505;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Moving scanner line across the screen */
+.scannerLine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 77, 77, 0.05), transparent);
+  skew-x: -20deg;
+  animation: scan 3s infinite linear;
+}
+
+.loaderContent {
+  text-align: center;
+  z-index: 10;
+}
+
+/* Glitch animation for text */
+.glitchText {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 5px;
+  position: relative;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.glitchText::before,
+.glitchText::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #050505;
+}
+
+.glitchText::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff4d4d;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch 2s infinite linear alternate-reverse;
+}
+
+.glitchText::after {
+  left: -2px;
+  text-shadow: -2px 0 #00d4ff; /* Slight cyan offset for depth */
+  clip: rect(10px, 450px, 25px, 0);
+  animation: glitch 3s infinite linear alternate-reverse;
+}
+
+/* Techy Progress Bar */
+.progressBar {
+  width: 250px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  width: 40%;
+  height: 100%;
+  background: #ff4d4d;
+  box-shadow: 0 0 15px #ff4d4d;
+  position: absolute;
+  animation: loadingMove 1.5s infinite ease-in-out;
+}
+
+.loaderSub {
+  margin-top: 15px;
+  font-size: 0.6rem;
+  color: #ff4d4d;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
+
+/* Animations */
+@keyframes scan {
+  0% { left: -100%; }
+  100% { left: 150%; }
+}
+
+@keyframes loadingMove {
+  0% { left: -40%; }
+  50% { left: 100%; }
+  100% { left: -40%; }
+}
+
+@keyframes glitch {
+  0% { clip: rect(10px, 999px, 40px, 0); }
+  20% { clip: rect(50px, 999px, 60px, 0); }
+  40% { clip: rect(30px, 999px, 80px, 0); }
+  60% { clip: rect(10px, 999px, 20px, 0); }
+  80% { clip: rect(70px, 999px, 90px, 0); }
+  100% { clip: rect(20px, 999px, 50px, 0); }
+}

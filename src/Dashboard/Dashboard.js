@@ -101,10 +101,7 @@ const Dashboard = () => {
         <div className={s.navScrollContainer}>
           <nav className={s.nav}>
             <p className={s.sectionLabel}>MENU</p>
-            <button className={isActive('/dashboard') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard'); setSidebarOpen(false); }}>
-              <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faColumns} /></div>
-              <span>Overview</span>
-            </button>
+
 
             <button className={isActive('/dashboard/messages') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/messages'); setSidebarOpen(false); }}>
               <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faEnvelopeOpenText} /></div>
@@ -170,11 +167,6 @@ const Dashboard = () => {
               <>
                 <p className={s.sectionLabel}>SYSTEM</p>
                 
-                <button className={isActive('/dashboard/groups') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/groups'); setSidebarOpen(false); }}>
-                  <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faLayerGroup} /></div>
-                  <span>Group Pools</span>
-                </button>
-
                 <button className={isActive('/dashboard/roles') ? s.activeBtn : s.navBtn} onClick={() => { navigate('/dashboard/roles'); setSidebarOpen(false); }}>
                   <div className={s.iconBox}><FontAwesomeIcon icon={Icons.faUserShield} /></div>
                   <span>Role Access</span>

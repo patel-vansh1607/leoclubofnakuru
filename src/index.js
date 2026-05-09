@@ -15,7 +15,6 @@ import Signup from './SignUp/Signup';
 import VerifyOTP from './VerifyOTP/VerifyOTP'; 
 import SetPassword from './SetPassword/SetPassword'; 
 import Dashboard from './Dashboard/Dashboard';
-import Overview from './Overview/Overview'; // ADDED OVERVIEW IMPORT
 import RoleManagement from './RoleManagement/RoleManagement';
 import DraftTeams from './DraftTeams/DraftTeams';
 import AddTeam from './AddTeam/AddTeam';
@@ -23,7 +22,6 @@ import PlayingTeams from './PlayingTeams/PlayingTeams';
 import TeamDetails from './TeamDetails/TeamDetails';
 import ScorerVerify from './ScoreVerify/ScoreVerify';
 import ScoringTerminal from './ScoringTerminal/ScoringTerminal'; 
-import GroupManager from './GroupManager/GroupManager'; 
 import QuickQR from './QuickQR/QuickQR';
 import About from './AboutUs/AboutUs'; 
 import Maintenance from './Maintenance/Maintenance';
@@ -61,8 +59,22 @@ const Gatekeeper = ({ children }) => {
     window.location.href = '/admin'; 
   };
 
-  if (loading) return <div className="loader-center">SYSTEM_CHECKING...</div>;
-  if (role === 'guest') return <Navigate to="/admin" />;
+if (loading) {
+  return (
+    <div className="loaderContainer">
+      <div className="scannerLine"></div>
+      <div className="loaderContent">
+        <div className="glitchText" data-text="SYSTEM_CHECKING...">
+          LOADING...
+        </div>
+        <div className="progressBar">
+          <div className="progressFill"></div>
+        </div>
+        <p className="loaderSub">ESTABLISHING SECURE PROTOCOLS</p>
+      </div>
+    </div>
+  );
+}  if (role === 'guest') return <Navigate to="/admin" />;
   
   if (role === 'unauthorized') {
     return (
@@ -120,9 +132,8 @@ const PageTitleUpdater = () => {
       '/signup': 'Identification | Leo Football Cup 2026',
       '/signup/verify': 'Verification | Leo Football Cup 2026',
       '/signup/password': 'Security Setup | Leo Football Cup 2026',
-      '/dashboard': 'Overview | Leo Football Cup 2026', // UPDATED FOR OVERVIEW
+      '/dashboard': 'Overview | Leo Football Cup 2026', 
       '/dashboard/scoring': 'Match Scoring | Leo Football Cup 2026', 
-      '/dashboard/groups': 'Group Pools | Leo Football Cup 2026',
       '/contact': 'Contact Us | Leo Football Cup 2026',
     };
     document.title = routeTitles[location.pathname] || 'Leo Football Cup 2026';
@@ -157,11 +168,9 @@ root.render(
           
           {/* PROTECTED DASHBOARD */}
           <Route path="dashboard" element={<Gatekeeper><Dashboard /></Gatekeeper>}>
-            <Route index element={<Overview />} /> {/* NOW PROPERLY IMPORTED */}
             <Route path="teams" element={<TeamGallery />} /> 
             <Route path="verify-player" element={<ScorerVerify />} />
             <Route path="scoring" element={<ScoringTerminal />} /> 
-            <Route path="groups" element={<GroupManager />} /> 
             <Route path="add-team" element={<AddTeam />} />
             <Route path="playing-teams" element={<PlayingTeams />} />
             <Route path="playing-teams/:teamId" element={<TeamDetails />} />
