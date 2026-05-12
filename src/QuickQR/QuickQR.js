@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 
-const QuickQR = ({ initialLink = "https://vocnakuru.live" }) => {
+const QuickQR = ({ initialLink = "https://leofootball.online" }) => {
   const [link, setLink] = useState(initialLink);
   const [svg, setSvg] = useState('');
 
