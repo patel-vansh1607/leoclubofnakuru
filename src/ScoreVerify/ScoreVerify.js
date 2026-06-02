@@ -8,7 +8,7 @@ import {
   faCheckCircle, 
   faTimesCircle, 
   faFingerprint,
-  faExpand,
+  faBolt,
   faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 import s from './ScoreVerify.module.css';
@@ -17,30 +17,51 @@ const ScoreVerify = () => {
   const [status, setStatus] = useState('ready'); 
   const [player, setPlayer] = useState(null);
   const [scannerReady, setScannerReady] = useState(false);
+  
   const scannerRef = useRef(null);
-  const isProcessing = useRef(false);
+  const sounds = useRef(null);
+  
+  const lastScanTime = useRef(0);
+  const ignoreScansUntil = useRef(0);
 
-  // High-performance sound effects (Retained your URLs)
-  const sounds = useRef({
-    success: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'], volume: 0.5 }),
-    error: new Howl({ src: ['https://res.cloudinary.com/dxgkcyfrl/video/upload/v1778316785/mixkit-wrong-answer-fail-notification-946_x1n4mf.wav'], volume: 0.5 }),
-    heartbeat: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'], loop: true, volume: 0.2 })
-  });
+  // Mute internal library race warnings globally during setup
+  useEffect(() => {
+    const originalConsoleError = console.error;
+    console.error = function (...args) {
+      const msg = args[0]?.message || args[0] || '';
+      if (typeof msg === 'string' && msg.includes('Cannot transition to a new state')) {
+        return;
+      }
+      originalConsoleError.apply(console, args);
+    };
+    return () => {
+      console.error = originalConsoleError;
+    };
+  }, []);
+
+  if (!sounds.current) {
+    sounds.current = {
+      success: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'], volume: 0.5 }),
+      error: new Howl({ src: ['https://res.cloudinary.com/dxgkcyfrl/video/upload/v1778316785/mixkit-wrong-answer-fail-notification-946_x1n4mf.wav'], volume: 0.5 }),
+      heartbeat: new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'], loop: true, volume: 0.2 })
+    };
+  }
 
   const handleScan = useCallback(async (decodedText) => {
-    if (isProcessing.current || status !== 'ready') return;
-    
-    // Strict ID validation
+    const now = Date.now();
+    if (now < ignoreScansUntil.current) return;
+    if (now - lastScanTime.current < 1500) return; 
+    lastScanTime.current = now;
+
     const upperText = decodedText.trim().toUpperCase();
     if (!upperText.includes('LEO-CUP-')) return;
 
-    isProcessing.current = true;
+    ignoreScansUntil.current = now + 5000;
     setStatus('verifying');
     sounds.current.heartbeat.play();
-    if (navigator.vibrate) navigator.vibrate(50); // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate(50);
 
     try {
-      // Direct query for speed
       const { data, error } = await supabase
         .from('players')
         .select(`
@@ -63,51 +84,82 @@ const ScoreVerify = () => {
     } catch (err) {
       sounds.current.heartbeat.stop();
       sounds.current.error.play();
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Error buzz
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       setStatus('error');
     }
 
-    // Cooldown period
     setTimeout(() => {
       setStatus('ready');
-      setPlayer(null);
-      isProcessing.current = false;
+      setTimeout(() => {
+        setPlayer(null);
+        ignoreScansUntil.current = Date.now();
+      }, 300);
     }, 3000); 
-  }, [status]);
+  }, []);
 
- useEffect(() => {
+  useEffect(() => {
     const html5QrCode = new Html5Qrcode("reader");
     scannerRef.current = html5QrCode;
 
+    // High performance config parameters
     const config = { 
-      fps: 60, // Maximum frame rate
-      // Large box forces full-frame scanning
-      qrbox: (vw, vh) => { return { width: vw, height: vh } }, 
+      fps: 60, 
+      qrbox: undefined, // Fully unconstrained view rendering for extreme distance scans
       aspectRatio: 1.0,
-      disableFlip: false,
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true // Native mobile hardware accel
+        useBarCodeDetectorIfSupported: true 
       }
     };
 
+    // FIXED: Formatted strictly to match the library's required syntax blueprint
+    const cameraTargetOptions = {
+      facingMode: "environment"
+    };
+
+    const processIncomingText = (rawText) => {
+      if (Date.now() < ignoreScansUntil.current) return;
+      handleScan(rawText);
+    };
+
+    // Clean initialization line wrapper execution
     html5QrCode.start(
-      { facingMode: "environment" }, 
+      cameraTargetOptions, 
       config, 
-      (decodedText) => {
-        if (decodedText.toUpperCase().includes('LEO-CUP-')) {
-          handleScan(decodedText);
+      processIncomingText,
+      () => {}
+    )
+    .then(() => {
+      setScannerReady(true);
+      
+      // Apply focal length parameters to the live track AFTER camera channel negotiation succeeds
+      try {
+        const videoTrack = html5QrCode.getRunningTrack();
+        if (videoTrack && typeof videoTrack.applyConstraints === 'function') {
+          videoTrack.applyConstraints({
+            width: { min: 1280, ideal: 1920, max: 3840 },
+            height: { min: 720, ideal: 1080, max: 2160 },
+            advanced: [{ focusMode: "continuous" }, { zoom: 1.0 }]
+          }).catch(e => console.warn("Fine-tuning constraints skipped by hardware:", e));
         }
+      } catch (trackErr) {
+        console.warn("Optical track optimization bypassed:", trackErr);
       }
-    ).then(() => setScannerReady(true))
-     .catch(err => console.error("Ultra-scan failed:", err));
+    })
+    .catch(err => {
+      console.error("Critical: Camera matrix failed to connect:", err);
+    });
 
     return () => {
       if (scannerRef.current) {
-        if (scannerRef.current.getState() === 2) {
+        const state = scannerRef.current.getState();
+        if (state === 2 || state === 3) {
           scannerRef.current.stop()
             .then(() => scannerRef.current.clear())
-            .catch(e => console.warn("Scanner cleanup failed:", e));
+            .catch(e => console.warn("Clean device stream release skipped:", e));
         }
+      }
+      if (sounds.current) {
+        Object.values(sounds.current).forEach(sound => sound.unload());
       }
     };
   }, [handleScan]);
@@ -120,11 +172,11 @@ const ScoreVerify = () => {
           <div className={s.themeIcon}><FontAwesomeIcon icon={faUserShield} /></div>
           <div className={s.headerText}>
             <h1>CORE<span>_VERIFIER</span></h1>
-            <p>ENCRYPTED_SQUAD_UPLINK</p>
+            <p>LONG_RANGE_STABILIZED</p>
           </div>
           <div className={s.liveIndicator}>
             <div className={s.dot}></div>
-            LIVE
+            AUTO
           </div>
         </div>
 
@@ -132,20 +184,15 @@ const ScoreVerify = () => {
         <div className={`${s.scannerFrame} ${!scannerReady ? s.loading : ''}`}>
           <div id="reader" className={s.reader}></div>
           
-          {/* UI OVERLAY LAYER */}
+          {/* OMNIDIRECTIONAL INTERFACE OVERLAY */}
           <div className={s.interfaceLayer}>
              {status === 'ready' && (
                <>
                  <div className={s.laser}></div>
-                 <div className={s.reticle}>
-                   <div className={s.cTopLeft}></div>
-                   <div className={s.cTopRight}></div>
-                   <div className={s.cBottomLeft}></div>
-                   <div className={s.cBottomRight}></div>
-                 </div>
+                 <div className={s.openViewportHighlight}></div>
                  <div className={s.hint}>
-                    <FontAwesomeIcon icon={faExpand} className={s.pulse} />
-                    <span>SCAN PLAYER CHIP</span>
+                    <FontAwesomeIcon icon={faBolt} className={s.pulse} />
+                    <span>FAR-FIELD SCANNING // POINT ANYWHERE</span>
                  </div>
                </>
              )}
@@ -168,15 +215,15 @@ const ScoreVerify = () => {
                       <FontAwesomeIcon icon={faCheckCircle} />
                     </div>
                     <span className={s.label}>IDENTITY_CONFIRMED</span>
-                    <h2 className={s.pName}>{player?.name}</h2>
+                    <h2 className={s.pName}>{player?.name || "---"}</h2>
                     <div className={s.pMeta}>
                        <div className={s.metaItem}>
                           <small>TEAM</small>
-                          <strong>{player?.teams?.team_name}</strong>
+                          <strong>{player?.teams?.team_name || "UNKNOWN"}</strong>
                        </div>
                        <div className={s.metaItem}>
                           <small>SQUAD_NO</small>
-                          <strong>#{player?.jersey_number}</strong>
+                          <strong>{player?.jersey_number ? `#${player.jersey_number}` : "##"}</strong>
                        </div>
                     </div>
                   </div>
@@ -198,10 +245,10 @@ const ScoreVerify = () => {
         <div className={s.footer}>
           <div className={s.sysInfo}>
             <FontAwesomeIcon icon={faFingerprint} />
-            <span>DB_UPLINK: ACTIVE</span>
+            <span>NATIVE_OPTIMIZATION: STABLE</span>
           </div>
           <div className={s.version}>
-            v2.1.0 // SECURE_BOOT
+            v3.5.0 // ALIGNED
           </div>
         </div>
       </div>
