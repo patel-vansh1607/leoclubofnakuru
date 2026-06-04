@@ -11,6 +11,13 @@
   box-sizing: border-box;
 }
 
+.feedbackRegion {
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 18px;
+  min-height: 110px; /* Layout spacer locking system to stop frame shifting up and down */
+}
+
 .scannerFrame {
   width: 100%;
   max-width: 420px;
@@ -25,18 +32,11 @@
   aspect-ratio: 1 / 1;
 }
 
-.feedbackRegion {
-  width: 100%;
-  max-width: 420px;
-  margin-top: 18px;
-  min-height: 110px;
-}
-
 .messageCard {
   padding: 16px;
   border-radius: 10px;
   box-sizing: border-box;
-  animation: slideIn 0.12s cubic-bezier(0, 0, 0.2, 1) forwards;
+  animation: slideDown 0.12s cubic-bezier(0, 0, 0.2, 1) forwards;
 }
 
 .statusTag {
@@ -81,10 +81,10 @@
   color: #f8d7da;
 }
 
-@keyframes slideIn {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;

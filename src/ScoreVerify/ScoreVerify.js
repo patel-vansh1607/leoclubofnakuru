@@ -13,7 +13,7 @@ const ScoreVerify = () => {
   const handleScan = useCallback(async (decodedText) => {
     const now = Date.now();
     
-    // Fast debounce buffer (400ms) to ignore accidental repeat frames
+    // Fast 400ms scan debounce to stop accidental duplicate frame captures
     if (now - lastScanTime.current < 400) return;
     lastScanTime.current = now;
 
@@ -23,7 +23,6 @@ const ScoreVerify = () => {
     if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
 
     try {
-      // Direct key matching against the players table
       const { data, error } = await supabase
         .from('players')
         .select(`
@@ -45,11 +44,11 @@ const ScoreVerify = () => {
       setErrorMsg(`NOT FOUND: ${targetId}`);
     }
 
-    // Auto-clear alert frame after 2.5 seconds
+    // Auto-dismiss layout window clears out completely after exactly 3 seconds
     clearTimerRef.current = setTimeout(() => {
       setPlayer(null);
       setErrorMsg(null);
-    }, 2500);
+    }, 3000);
   }, []);
 
   useEffect(() => {
@@ -84,10 +83,7 @@ const ScoreVerify = () => {
   
   return (
     <div className={s.page}>
-      <div className={s.scannerFrame}>
-        <div id="reader" className={s.reader}></div>
-      </div>
-
+      {/* FEEDBACK REGION MOVED ON TOP */}
       <div className={s.feedbackRegion}>
         {player && (
           <div className={`${s.messageCard} ${s.success}`}>
@@ -106,6 +102,11 @@ const ScoreVerify = () => {
             <p className={s.errorText}>{errorMsg}</p>
           </div>
         )}
+      </div>
+
+      {/* SCANNER VIEWPORT UNDER OVERLAYS */}
+      <div className={s.scannerFrame}>
+        <div id="reader" className={s.reader}></div>
       </div>
     </div>
   );
